@@ -1635,7 +1635,7 @@ window.openResModalEdit = function(fbKey, nom, type) {
   // Stocker la clé en cours d'édition
   window._editingResKey = fbKey;
   window._editingResNom = nom;
-  document.getElementById('resModalOverlay').classList.add('open');
+  document.getElementById('resModalOverlay')?.classList.add('open');
 };
 
 window.restoreResidence = function(fbKey, nom) {
@@ -1654,11 +1654,11 @@ window.openResModal = function() {
   document.getElementById('resType').value = 'appar_ramon_vmc';
   document.getElementById('resNotes').value = '';
   document.getElementById('resSaveBtn').textContent = 'Créer la résidence';
-  document.getElementById('resModalOverlay').classList.add('open');
+  document.getElementById('resModalOverlay')?.classList.add('open');
 };
 
 window.closeResModal = function() {
-  document.getElementById('resModalOverlay').classList.remove('open');
+  document.getElementById('resModalOverlay')?.classList.remove('open');
   window._editingResKey = null;
   window._editingResNom = null;
 };
@@ -1683,7 +1683,7 @@ window.toggleContratResidence = function(ri) {
     window._suspendNom = nom;
     document.getElementById('suspendResNom').textContent = nom;
     document.getElementById('suspendDateFin').value = '';
-    document.getElementById('suspendModalOverlay').classList.add('open');
+    document.getElementById('suspendModalOverlay')?.classList.add('open');
   }
 };
 
@@ -1691,7 +1691,7 @@ window.confirmSuspendRes = function() {
   const ri = window._suspendRi;
   const nom = window._suspendNom;
   const dateFin = document.getElementById('suspendDateFin').value;
-  document.getElementById('suspendModalOverlay').classList.remove('open');
+  document.getElementById('suspendModalOverlay')?.classList.remove('open');
   db.ref('lot10_res_contracts/' + ri).update({ statut: 'suspendu', dateFin: dateFin || '', updatedAt: new Date().toISOString() }).then(() => {
     showToast('🔴 Contrat suspendu pour « ' + nom + ' »' + (dateFin ? ' – fin: ' + dateFin : ''));
     renderParamResidences();
@@ -1700,7 +1700,7 @@ window.confirmSuspendRes = function() {
 };
 
 window.closeSuspendModal = function() {
-  document.getElementById('suspendModalOverlay').classList.remove('open');
+  document.getElementById('suspendModalOverlay')?.classList.remove('open');
 };
 
 window.saveResidence = function() {
@@ -1821,11 +1821,11 @@ window.openModal = function(key, comment, date) {
   currentModalKey = key;
   document.getElementById('modalComment').value = comment || '';
   document.getElementById('modalDate').value = date || '';
-  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalOverlay')?.classList.add('open');
 }
 
 window.closeModal = function() {
-  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('modalOverlay')?.classList.remove('open');
   currentModalKey = null;
 }
 
@@ -2165,7 +2165,7 @@ function openChaudModalFromLoc() {
   // Ferme la modale locataire temporairement, ouvre la chaudière
   // Quand la chaudière est sauvée, on rouvre et on resélectionne
   window._locModalWasOpen = true;
-  document.getElementById('locModalOverlay').classList.remove('open');
+  document.getElementById('locModalOverlay')?.classList.remove('open');
   // Pré-remplir la résidence si possible
   const riVal = document.getElementById('locResIdx').value;
   openChaudModal(null, riVal);
@@ -2209,14 +2209,14 @@ window.saveChaudiere = function() {
     window._locModalWasOpen = false;
     // Attendre que Firebase ait mis à jour chaudData (via listener)
     setTimeout(() => {
-      document.getElementById('locModalOverlay').classList.add('open');
+      document.getElementById('locModalOverlay')?.classList.add('open');
       populateLocChaudiereSelect(newKey);
     }, 600);
   }
 };
 
 window.closeLocModal = function() {
-  document.getElementById('locModalOverlay').classList.remove('open');
+  document.getElementById('locModalOverlay')?.classList.remove('open');
   document.getElementById('locResIdx').disabled = false;
 }
 
@@ -2265,7 +2265,7 @@ window.askDeleteLocataire = function(resIdx, locIdx, newKey) {
 }
 
 window.closeConfirm = function() {
-  document.getElementById('confirmOverlay').classList.remove('open');
+  document.getElementById('confirmOverlay')?.classList.remove('open');
   confirmDeleteFn = null;
 }
 
@@ -2627,7 +2627,7 @@ let chaudModalKey = null;
 function startListeningChaudieres() {
   db.ref('lot10_chaudieres').on('value', snap => {
     chaudData = snap.val() || {};
-    if (document.getElementById('tab-chaudieres').classList.contains('active')) renderChaudieresTable();
+    if (document.getElementById('tab-chaudieres')?.classList.contains('active')) renderChaudieresTable();
     const statEl = document.getElementById('statChaud');
     if (statEl) statEl.textContent = Object.keys(chaudData).length;
   });
@@ -2662,11 +2662,11 @@ window.openChaudModal = function(key, preResIdx) {
   document.getElementById('chaudAnnee').value = d.annee || '';
   document.getElementById('chaudEmplacement').value = d.emplacement || '';
   document.getElementById('chaudNotes').value = d.notes || '';
-  document.getElementById('chaudModalOverlay').classList.add('open');
+  document.getElementById('chaudModalOverlay')?.classList.add('open');
 }
 
 window.closeChaudModal = function() {
-  document.getElementById('chaudModalOverlay').classList.remove('open');
+  document.getElementById('chaudModalOverlay')?.classList.remove('open');
   chaudModalKey = null;
 }
 
@@ -2767,7 +2767,7 @@ let intervModalKey = null; // null = création, sinon clé à modifier
 function startListeningInterventions() {
   db.ref('lot10_interventions').on('value', snap => {
     intervData = Object.assign({}, SEED_INTERVENTIONS, snap.val() || {});
-    if (document.getElementById('tab-interventions').classList.contains('active')) renderInterventionsTable();
+    if (document.getElementById('tab-interventions')?.classList.contains('active')) renderInterventionsTable();
     // Mettre à jour le dashboard
     const statEl = document.getElementById('statInterv');
     if (statEl) statEl.textContent = Object.keys(intervData).length;
@@ -2875,7 +2875,7 @@ window.openIntervModal = function(key) {
 }
 
 window.closeIntervModal = function() {
-  document.getElementById('intervModalOverlay').classList.remove('open');
+  document.getElementById('intervModalOverlay')?.classList.remove('open');
   intervModalKey = null;
 }
 
@@ -3100,7 +3100,7 @@ let suiviModalKey = null;
 function startListeningSuivi() {
   db.ref('lot10_suivi').on('value', snap => {
     suiviData = snap.val() || {};
-    if (document.getElementById('tab-locataires').classList.contains('active')) renderLocatairesTable();
+    if (document.getElementById('tab-locataires')?.classList.contains('active')) renderLocatairesTable();
   });
 }
 
@@ -3139,11 +3139,11 @@ function openSuiviModal(key, nomLoc) {
   document.getElementById('suiviSms').value     = s.sms      || '';
   document.getElementById('suiviRelance').value = s.relance  || '';
   document.getElementById('suiviRemarque').value= s.remarque || '';
-  document.getElementById('suiviModalOverlay').classList.add('open');
+  document.getElementById('suiviModalOverlay')?.classList.add('open');
 }
 
 function closeSuiviModal() {
-  document.getElementById('suiviModalOverlay').classList.remove('open');
+  document.getElementById('suiviModalOverlay')?.classList.remove('open');
   suiviModalKey = null;
 }
 
@@ -3341,7 +3341,7 @@ let vmcModalKey = null;
 function startListeningVmc() {
   db.ref('lot10_vmc').on('value', snap => {
     vmcData = snap.val() || {};
-    if (document.getElementById('tab-vmc').classList.contains('active')) renderVmcTable();
+    if (document.getElementById('tab-vmc')?.classList.contains('active')) renderVmcTable();
   });
 }
 
@@ -3376,11 +3376,11 @@ function openVmcModal(key) {
     document.getElementById('vmcResultat').value = '';
     document.getElementById('vmcNotes').value = '';
   }
-  document.getElementById('vmcModalOverlay').classList.add('open');
+  document.getElementById('vmcModalOverlay')?.classList.add('open');
 }
 
 function closeVmcModal() {
-  document.getElementById('vmcModalOverlay').classList.remove('open');
+  document.getElementById('vmcModalOverlay')?.classList.remove('open');
   vmcModalKey = null;
 }
 
@@ -3468,7 +3468,7 @@ window.openEquipModal = function(ri, li, k, resNom, equipNom) {
   window._currentEquipRi = ri;
   window._currentEquipLi = li;
 
-  document.getElementById('vmcModalOverlay').classList.add('open');
+  document.getElementById('vmcModalOverlay')?.classList.add('open');
 };
 
 // Override saveVmc to handle equipment saving
@@ -3513,7 +3513,7 @@ window.saveVmcEquip = function() {
     closeVmcModal();
     window._currentEquipKey = null;
     selRes.disabled = false;
-    if (document.getElementById('tab-equipements').classList.contains('active')) renderEquipementsTable();
+    if (document.getElementById('tab-equipements')?.classList.contains('active')) renderEquipementsTable();
   });
 };
 
