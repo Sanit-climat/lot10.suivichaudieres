@@ -269,17 +269,6 @@ body.readonly .readonly-badge { display:flex !important }
 
 </style>
 
-<script>
-// Avertissement si ouvert en file://
-if (window.location.protocol === 'file:') {
-  document.addEventListener('DOMContentLoaded', function() {
-    const warn = document.createElement('div');
-    warn.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e74c3c;color:white;text-align:center;padding:12px;font-size:14px;font-weight:600;z-index:99999';
-    warn.innerHTML = '⚠️ Ce fichier doit être hébergé sur un serveur (GitHub Pages) — Firebase ne fonctionne pas en local (file://)';
-    document.body.appendChild(warn);
-  });
-}
-</script>
 </head>
 <body>
 
@@ -3269,17 +3258,6 @@ function openBailleurView() {
   @media print { body { padding: 0; } .no-print { display: none; } }
 </style>
 
-<script>
-// Avertissement si ouvert en file://
-if (window.location.protocol === 'file:') {
-  document.addEventListener('DOMContentLoaded', function() {
-    const warn = document.createElement('div');
-    warn.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e74c3c;color:white;text-align:center;padding:12px;font-size:14px;font-weight:600;z-index:99999';
-    warn.innerHTML = '⚠️ Ce fichier doit être hébergé sur un serveur (GitHub Pages) — Firebase ne fonctionne pas en local (file://)';
-    document.body.appendChild(warn);
-  });
-}
-</script>
 </head>
 <body>
 <div class="header">
