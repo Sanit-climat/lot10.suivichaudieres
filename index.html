@@ -341,8 +341,6 @@ body.readonly .readonly-badge { display:flex !important }
       <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:2px"></span> Appareil uniquement</span>
     </div>
     <div class="res-progress-list" id="dashResidences"></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:57%"></div></div><div class="nums" style="margin-top:6px"><span>💨 0 / 2 VMC / Extracteur</span><span><b>0%</b></span></div>
-      <div class="progress-bar" style="margin-top:2px"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#27ae60,#2ecc71)"></div></div></div></div>
   </div>
 
   <!-- RESIDENCES -->
@@ -1131,10 +1129,8 @@ auth.onAuthStateChanged(user => {
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'flex';
     document.getElementById('userEmail').textContent = user.email;
-    console.log('AUTH OK - user:', user.email, 'RESIDENCES_DATA:', RESIDENCES_DATA.length);
     // Affichage immédiat avec les données statiques
     setTimeout(() => {
-      console.log('setTimeout triggered');
       renderAll();
       initAllSearchableSelects();
     }, 100);
@@ -1173,7 +1169,6 @@ function startListening() {
   Object.entries(SEED_LOT10).forEach(([k,v]) => { dbData[k] = v; });
   Object.entries(SEED_LOC_OVERRIDES).forEach(([k,v]) => { locOverrides[k] = Object.assign(locOverrides[k]||{}, v); });
   Object.entries(SEED_INTERVENTIONS).forEach(([k,v]) => { intervData[k] = v; });
-  console.log('startListening - avant renderAll, RESIDENCES_DATA:', RESIDENCES_DATA.length);
   renderAll();
   initAllSearchableSelects();
   // Puis synchroniser avec Firebase (priorité Firebase)
@@ -1401,16 +1396,7 @@ function goToResidence(ri) {
 }
 
 function renderAccordion() {
-  console.log('renderAccordion called, RESIDENCES_DATA:', RESIDENCES_DATA.length);
-  // DEBUG: forcer visibilité accordionContainer
-  const dbgCont = document.getElementById('accordionContainer');
-  if (dbgCont) {
-    dbgCont.style.minHeight = '200px';
-    dbgCont.style.border = '3px solid red';
-    dbgCont.style.background = '#fff';
-    dbgCont.style.position = 'relative';
-    dbgCont.style.zIndex = '1';
-  }
+
   const q = document.getElementById('searchInput')?.value?.toLowerCase() || '';
   const st = document.getElementById('filterStatus')?.value || 'all';
   const fp = ssGetValue('filterPrestationWrap') || 'all';
