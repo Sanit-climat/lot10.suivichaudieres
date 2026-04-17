@@ -1131,9 +1131,13 @@ auth.onAuthStateChanged(user => {
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'flex';
     document.getElementById('userEmail').textContent = user.email;
+    console.log('AUTH OK - user:', user.email, 'RESIDENCES_DATA:', RESIDENCES_DATA.length);
     // Affichage immédiat avec les données statiques
-    renderAll();
-    initAllSearchableSelects();
+    setTimeout(() => {
+      console.log('setTimeout triggered');
+      renderAll();
+      initAllSearchableSelects();
+    }, 100);
     seedInitialData();
     startListening();
     startListeningLocOverrides();
@@ -1169,6 +1173,7 @@ function startListening() {
   Object.entries(SEED_LOT10).forEach(([k,v]) => { dbData[k] = v; });
   Object.entries(SEED_LOC_OVERRIDES).forEach(([k,v]) => { locOverrides[k] = Object.assign(locOverrides[k]||{}, v); });
   Object.entries(SEED_INTERVENTIONS).forEach(([k,v]) => { intervData[k] = v; });
+  console.log('startListening - avant renderAll, RESIDENCES_DATA:', RESIDENCES_DATA.length);
   renderAll();
   initAllSearchableSelects();
   // Puis synchroniser avec Firebase (priorité Firebase)
@@ -1396,8 +1401,9 @@ function goToResidence(ri) {
 }
 
 function renderAccordion() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const st = document.getElementById('filterStatus').value;
+  console.log('renderAccordion called, RESIDENCES_DATA:', RESIDENCES_DATA.length);
+  const q = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+  const st = document.getElementById('filterStatus')?.value || 'all';
   const fp = ssGetValue('filterPrestationWrap') || 'all';
   const riFilter = ssGetValue('filterResidenceWrap');
   const cont = document.getElementById('accordionContainer');
