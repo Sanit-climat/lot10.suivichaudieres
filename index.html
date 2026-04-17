@@ -1785,6 +1785,7 @@ window.showTab = function(tab, btn) {
     if (btns[idx]) btns[idx].classList.add('active');
   }
   if (tab === 'dashboard') renderDashboard();
+  if (tab === 'residences') renderAccordion();
   if (tab === 'locataires') renderLocatairesTable();
   if (tab === 'equipements') renderEquipementsTable();
   if (tab === 'chaudieres') renderChaudieresTable();
