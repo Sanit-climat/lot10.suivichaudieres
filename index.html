@@ -1402,6 +1402,15 @@ function goToResidence(ri) {
 
 function renderAccordion() {
   console.log('renderAccordion called, RESIDENCES_DATA:', RESIDENCES_DATA.length);
+  // DEBUG: forcer visibilité accordionContainer
+  const dbgCont = document.getElementById('accordionContainer');
+  if (dbgCont) {
+    dbgCont.style.minHeight = '200px';
+    dbgCont.style.border = '3px solid red';
+    dbgCont.style.background = '#fff';
+    dbgCont.style.position = 'relative';
+    dbgCont.style.zIndex = '1';
+  }
   const q = document.getElementById('searchInput')?.value?.toLowerCase() || '';
   const st = document.getElementById('filterStatus')?.value || 'all';
   const fp = ssGetValue('filterPrestationWrap') || 'all';
