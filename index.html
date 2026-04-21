@@ -1439,6 +1439,8 @@ function renderAccordion() {
     let count = 0, shown = 0;
     res.locataires.forEach((loc, li) => {
       const k = getKey(ri, li);
+      // Locataire supprimé → ne pas afficher
+      if (locOverrides['del_' + k]) return;
       const d = dbData[k] || {};
       const _ovr = locOverrides[k] || {};
       const _nxt = _ovr.dateProchainEntretien || '';
