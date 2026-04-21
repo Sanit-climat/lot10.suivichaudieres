@@ -922,6 +922,64 @@ body.readonly .readonly-badge { display:flex !important }
 </div>
 </div>
 
+<!-- MODAL SUSPENSION RÉSIDENCE -->
+<div id="suspendModalOverlay" class="modal-overlay" onclick="if(event.target===this)closeSuspendModal()">
+  <div class="modal" style="max-width:420px">
+    <h3>⏸️ Suspendre le contrat</h3>
+    <p style="color:#666;font-size:13px;margin-bottom:16px">Résidence : <strong id="suspendResNom"></strong></p>
+    <div class="form-group">
+      <label style="font-size:12px;color:#666;font-weight:600">Date de fin de contrat (optionnelle)</label>
+      <input type="date" id="suspendDateFin" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px">
+    </div>
+    <p style="color:#e67e22;font-size:12px;margin-top:10px">⚠️ La résidence apparaîtra en rouge dans toute l'application.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSuspendModal()">Annuler</button>
+      <button class="btn-primary" style="background:var(--danger)" onclick="confirmSuspendRes()">⏸️ Suspendre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT EXCEL LOCATAIRES -->
+<div class="modal-overlay" id="importLocModalOverlay" style="display:none;z-index:9999;align-items:center;justify-content:center">
+  <div class="modal" style="max-width:700px;width:95%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0">📥 Importer un listing locataires</h3>
+      <button onclick="closeImportLocModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#666">✕</button>
+    </div>
+    <div id="importLocResName" style="font-weight:600;color:var(--primary);margin-bottom:12px;font-size:15px"></div>
+
+    <div id="importStep1">
+      <p style="color:#64748b;font-size:13px;margin-bottom:12px">Sélectionnez un fichier Excel (.xlsx ou .xls). L'application va détecter automatiquement les colonnes.</p>
+      <label style="display:inline-block;background:var(--primary);color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px">
+        📂 Choisir le fichier Excel
+        <input type="file" id="importLocFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportLocFile(this)">
+      </label>
+      <div id="importLocFileInfo" style="margin-top:8px;font-size:12px;color:#64748b"></div>
+    </div>
+
+    <div id="importStep2" style="display:none">
+      <div style="background:#f0f7ff;border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#1a5276">🗂️ Correspondance des colonnes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="importColMapping"></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">👁️ Aperçu (5 premières lignes)</div>
+      <div style="overflow-x:auto;margin-bottom:14px">
+        <table id="importPreviewTable" style="width:100%;border-collapse:collapse;font-size:11px"></table>
+      </div>
+      <div id="importLocCount" style="font-size:13px;color:#27ae60;font-weight:600;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="backToStep1()" style="flex:1;padding:10px;background:#e9ecef;border:none;border-radius:8px;cursor:pointer;font-size:13px">← Changer fichier</button>
+        <button onclick="confirmImportLoc()" style="flex:2;padding:10px;background:var(--success);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">✅ Importer les locataires</button>
+      </div>
+    </div>
+
+    <div id="importStep3" style="display:none;text-align:center;padding:20px">
+      <div id="importResultMsg" style="font-size:16px;font-weight:600;margin-bottom:12px"></div>
+      <button onclick="closeImportLocModal()" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer">OK</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 // ===================== SEARCHABLE SELECT =====================
