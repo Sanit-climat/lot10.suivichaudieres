@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-
-<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Suivi Entretien – LOT 10 Porte de Camargues</title>
+<title>Suivi Entretien Chaudière – LOT 10 Porte de Camargues</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
+
 :root{--primary:#1a5276;--secondary:#2980b9;--success:#27ae60;--warning:#e67e22;--danger:#c0392b;--light:#f4f6f9;--border:#dde3ea;--text:#2c3e50;--white:#fff;--shadow:0 2px 8px rgba(0,0,0,.12)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--light);color:var(--text);font-size:14px}
@@ -267,250 +268,269 @@ body.readonly .readonly-badge { display:flex !important }
 .res-type-appar.res-suspended .res-header,
 .res-type-appar_vmc.res-suspended .res-header { border-left-color: #c0392b !important; }
 
-</style>
 
+</style>
 </head>
 <body>
 
 <!-- LOADER -->
-<div id="loader" style="display: none;"><div class="spinner"></div>Chargement...</div>
+<div id="loader" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;z-index:9999;font-size:18px;color:var(--primary)">Chargement...</div>
 
 <!-- AUTH -->
-<div id="authScreen" style="display: none;">
-<div class="auth-box">
-  <h1>🔥 LOT 10 – Porte de Camargues</h1>
-  <p>Suivi Entretien Chaudière</p>
-  <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
-  <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
-  <button onclick="doLogin()">Connexion</button>
-  <div id="authError"></div>
-</div>
+<div id="authScreen">
+  <div class="login-box">
+    <div class="login-logo">🔥</div>
+    <h2>Suivi Entretien – LOT 10</h2>
+    <p style="color:#888;font-size:13px;margin-bottom:20px">Porte de Camargues</p>
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+    <input type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
+    <button onclick="doLogin()">Connexion</button>
+    <div id="authError" style="color:var(--danger);font-size:13px;margin-top:8px;min-height:20px"></div>
+  </div>
 </div>
 
 <!-- APP -->
-<div id="appScreen" style="display: none;">
-<header>
-  <div class="header-left">
-    <h1>🔥 Suivi Entretien Chaudière</h1>
-    <span>LOT 10 – Porte de Camargues</span>
-  </div>
-  <div class="header-right">
-    <span class="readonly-badge">👁️ Mode lecture seule</span>
-    <span id="userEmail"></span>
-    <button id="btnLogout" onclick="doLogout()">Déconnexion</button>
-  </div>
-</header>
+<div id="appScreen" style="display:none;flex-direction:column;min-height:100vh">
 
-<div class="tabs">
-  <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Tableau de bord</button>
-  <button class="tab-btn" onclick="showTab('residences',this)">🏘️ Résidences</button>
-  <button class="tab-btn" onclick="showTab('locataires',this)">👤 Locataires</button>
-  <button class="tab-btn" onclick="showTab('equipements',this)">💨 Équipements VMC</button>
-  <button class="tab-btn" onclick="showTab('chaudieres',this)">🔥 Chaudières</button>
-  <button class="tab-btn" onclick="showTab('interventions',this)">🔧 Interventions</button>
-  <button class="tab-btn" onclick="showTab('vmc',this)">💨 Interventions VMC</button>
-  <button class="tab-btn" onclick="showTab('parametres',this)" style="margin-left:auto">⚙️ Paramètres</button>
-</div>
+  <!-- HEADER -->
+  <div id="appHeader" style="background:linear-gradient(135deg,var(--primary),#1a3a5c);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+    <div>
+      <div style="font-size:17px;font-weight:700">🔥 Suivi Entretien Chaudière</div>
+      <div style="font-size:11px;opacity:.8;margin-top:2px">LOT 10 – Porte de Camargues</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="readonly-badge">👁️ Mode lecture seule</span>
+      <span id="userEmail" style="font-size:12px;opacity:.9"></span>
+      <button id="btnLogout" onclick="doLogout()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px">Déconnexion</button>
+    </div>
+  </div>
 
-<main>
-  <!-- DASHBOARD -->
-  <div id="tab-dashboard" class="tab-panel active">
-    <div class="stats-grid">
-      <div class="stat-card"><div class="val" id="statTotal">1585</div><div class="lbl">Logements</div></div>
-      <div class="stat-card"><div class="val" id="statDone" style="color:var(--success)">522</div><div class="lbl">Entretiens faits</div></div>
-      <div class="stat-card"><div class="val" id="statTodo" style="color:var(--warning)">1063</div><div class="lbl">À planifier</div></div>
-      <div class="stat-card">
-        <div class="val" id="statPct" style="color:var(--secondary)">33%</div>
-        <div class="lbl">Taux de réalisation</div>
-        <div class="progress-bar"><div class="progress-fill" id="statBar" style="width: 33%;"></div></div>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Tableau de bord</button>
+    <button class="tab-btn" onclick="showTab('residences',this)">🏘️ Résidences</button>
+    <button class="tab-btn" onclick="showTab('locataires',this)">👤 Locataires</button>
+    <button class="tab-btn" onclick="showTab('equipements',this)">💨 Équipements VMC</button>
+    <button class="tab-btn" onclick="showTab('chaudieres',this)">🔥 Chaudières</button>
+    <button class="tab-btn" onclick="showTab('interventions',this)">🔧 Interventions</button>
+    <button class="tab-btn" onclick="showTab('vmc',this)">💨 Interventions VMC</button>
+    <button class="tab-btn" onclick="showTab('parametres',this)" style="margin-left:auto">⚙️ Paramètres</button>
+  </div>
+
+  <!-- CONTENU TABS -->
+  <div id="tabsContent" style="flex:1;overflow:auto">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-panel active">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="val" id="statTotal">—</div><div class="lbl">Logements</div></div>
+        <div class="stat-card"><div class="val" id="statDone" style="color:var(--success)">—</div><div class="lbl">Entretiens faits</div></div>
+        <div class="stat-card"><div class="val" id="statTodo" style="color:var(--warning)">—</div><div class="lbl">À planifier</div></div>
+        <div class="stat-card">
+          <div class="val" id="statPct" style="color:var(--secondary)">—</div>
+          <div class="lbl">Taux de réalisation</div>
+          <div class="progress-bar"><div class="progress-fill" id="statBar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="showTab('chaudieres')">
+          <div class="val" id="statChaud" style="color:var(--warning)">—</div>
+          <div class="lbl">🔥 Chaudières renseignées</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="showTab('interventions')">
+          <div class="val" id="statInterv" style="color:var(--primary)">—</div>
+          <div class="lbl">🔧 Interventions</div>
+        </div>
       </div>
-      <div class="stat-card" style="cursor:pointer" onclick="showTab('chaudieres')">
-        <div class="val" id="statChaud" style="color:var(--warning)">10</div>
-        <div class="lbl">🔥 Chaudières renseignées</div>
+      <h3 style="margin-bottom:8px;color:var(--primary)">Avancement par résidence</h3>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#e67e22;border-radius:2px"></span> Appareil + Ramonage + VMC</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#27ae60;border-radius:2px"></span> VMC uniquement</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#8e44ad;border-radius:2px"></span> Appareil + VMC</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:2px"></span> Appareil uniquement</span>
       </div>
-      <div class="stat-card" style="cursor:pointer" onclick="showTab('interventions')">
-        <div class="val" id="statInterv" style="color:var(--primary)">708</div>
-        <div class="lbl">🔧 Interventions</div>
+      <div class="res-progress-list" id="dashResidences"></div>
+    </div>
+
+    <!-- RESIDENCES -->
+    <div id="tab-residences" class="tab-panel">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Rechercher locataire, référence..." oninput="applyFilter()">
+        <select id="filterStatus" onchange="applyFilter()">
+          <option value="all">Tous les statuts</option>
+          <option value="done">✅ Fait</option>
+          <option value="todo">⏳ À faire</option>
+        </select>
+        <div class="ss-wrap" id="filterResidenceWrap" style="min-width:240px"></div>
+        <span class="ss-arrow" id="filterResidenceWrap_arrow">▼</span>
+        <div class="ss-dropdown" id="filterResidenceWrap_drop">
+          <div class="ss-search"><input type="text" id="filterResidenceWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+          <div class="ss-list" id="filterResidenceWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
+        </div>
+        <div class="ss-wrap" id="filterPrestationWrap" style="min-width:200px"></div>
+        <span class="ss-arrow" id="filterPrestationWrap_arrow">▼</span>
+        <div class="ss-dropdown" id="filterPrestationWrap_drop">
+          <div class="ss-search"><input type="text" id="filterPrestationWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+          <div class="ss-list" id="filterPrestationWrap_list"><div class="ss-option selected" data-value="">Toutes les prestations</div></div>
+        </div>
+        <button class="btn-add" onclick="openResModal()" style="white-space:nowrap">➕ Nouvelle résidence</button>
+      </div>
+      <div class="legend-bar">
+        <strong style="margin-right:4px">Prestations :</strong>
+        <span class="legend-item"><span class="legend-dot" style="background:#e67e22"></span> Appareil de production + Ramonage + VMC</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#27ae60"></span> VMC uniquement</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Appareil de production + VMC</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#2980b9"></span> Appareil de production uniquement</span>
+      </div>
+      <div id="accordionContainer"></div>
+    </div>
+
+    <!-- LOCATAIRES -->
+    <div id="tab-locataires" class="tab-panel">
+      <div class="loc-table-wrap">
+        <div class="loc-table-header">
+          <h2>👤 Locataires</h2>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="locSearchInput" placeholder="🔍 Rechercher..." oninput="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:220px">
+            <div class="ss-wrap" id="locFilterResWrap" style="min-width:220px"></div>
+            <span class="ss-arrow" id="locFilterResWrap_arrow">▼</span>
+            <div class="ss-dropdown" id="locFilterResWrap_drop">
+              <div class="ss-search"><input type="text" id="locFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+              <div class="ss-list" id="locFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
+            </div>
+            <select id="locFilterStatut" onchange="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
+              <option value="all">Tous les statuts</option>
+              <option value="todo">⏳ Non réalisés</option>
+              <option value="done">✅ Réalisés</option>
+            </select>
+            <select id="locSortBy" onchange="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
+              <option value="nom">Trier : Nom A→Z</option>
+              <option value="nom_desc">Trier : Nom Z→A</option>
+              <option value="res">Trier : Résidence</option>
+              <option value="entretien_asc">Trier : Prochain entretien ↑</option>
+              <option value="entretien_desc">Trier : Prochain entretien ↓</option>
+              <option value="statut">Trier : Statut (à faire d'abord)</option>
+            </select>
+            <button class="bailleur-btn" onclick="openBailleurView()">📄 Vue Bailleur</button>
+            <button class="btn-add" onclick="openLocModal()">+ Ajouter un locataire</button>
+          </div>
+        </div>
+        <div id="locatairesTableContainer"></div>
       </div>
     </div>
-    <h3 style="margin-bottom:8px;color:var(--primary)">Avancement par résidence</h3>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center;">
-      <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#e67e22;border-radius:2px"></span> Appareil + Ramonage + VMC</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#27ae60;border-radius:2px"></span> VMC uniquement</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#8e44ad;border-radius:2px"></span> Appareil + VMC</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;background:#2980b9;border-radius:2px"></span> Appareil uniquement</span>
+
+    <!-- EQUIPEMENTS VMC -->
+    <div id="tab-equipements" class="tab-panel">
+      <div class="loc-table-wrap">
+        <div class="loc-table-header">
+          <h2>💨 Équipements VMC</h2>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="equipSearchInput" placeholder="🔍 Rechercher résidence, équipement..." oninput="renderEquipementsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:220px">
+            <div class="ss-wrap" id="equipFilterResWrap" style="min-width:220px"></div>
+            <span class="ss-arrow" id="equipFilterResWrap_arrow">▼</span>
+            <div class="ss-dropdown" id="equipFilterResWrap_drop">
+              <div class="ss-search"><input type="text" id="equipFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+              <div class="ss-list" id="equipFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
+            </div>
+            <select id="equipFilterStatus" onchange="renderEquipementsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
+              <option value="all">Tous les statuts</option>
+              <option value="done">✅ Entretenus</option>
+              <option value="todo">⏳ À planifier</option>
+            </select>
+          </div>
+        </div>
+        <div id="equipTableContainer"></div>
+      </div>
     </div>
-    <div class="res-progress-list" id="dashResidences"></div>
-  </div>
 
-  <!-- RESIDENCES -->
-  <div id="tab-residences" class="tab-panel">
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="🔍 Rechercher locataire, référence..." oninput="applyFilter()">
-      <select id="filterStatus" onchange="applyFilter()">
-        <option value="all">Tous les statuts</option>
-        <option value="done">✅ Fait</option>
-        <option value="todo">⏳ À faire</option>
-      </select>
-      <div class="ss-wrap" id="filterResidenceWrap" style="min-width:240px"></div>
-    <span class="ss-arrow" id="filterResidenceWrap_arrow">▼</span>
-    <div class="ss-dropdown" id="filterResidenceWrap_drop">
-      <div class="ss-search"><input type="text" id="filterResidenceWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
-      <div class="ss-list" id="filterResidenceWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
-    </div></div>
-      <button class="btn-add" onclick="openResModal()" style="white-space:nowrap">➕ Nouvelle résidence</button>
-    <div class="legend-bar">
-  <strong style="margin-right:4px">Prestations :</strong>
-  <span class="legend-item"><span class="legend-dot" style="background:#e67e22"></span> Appareil de production + Ramonage + VMC</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#27ae60"></span> VMC uniquement</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#8e44ad"></span> Appareil de production + VMC</span>
-  <span class="legend-item"><span class="legend-dot" style="background:#2980b9"></span> Appareil de production uniquement</span>
-</div>
-<div id="accordionContainer"></div>
-</div>
+    <!-- CHAUDIERES -->
+    <div id="tab-chaudieres" class="tab-panel">
+      <div class="toolbar">
+        <div class="search-bar" style="margin-bottom:0;flex:1">
+          <input type="text" id="chaudSearchInput" placeholder="🔍 Rechercher locataire ou type de chaudière..." oninput="renderChaudieresTable()">
+          <div class="ss-wrap" id="chaudFilterResWrap" style="min-width:200px"></div>
+          <span class="ss-arrow" id="chaudFilterResWrap_arrow">▼</span>
+          <div class="ss-dropdown" id="chaudFilterResWrap_drop">
+            <div class="ss-search"><input type="text" id="chaudFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+            <div class="ss-list" id="chaudFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="openChaudModal()" style="margin-left:10px">➕ Ajouter chaudière</button>
+      </div>
+      <div id="chaudieresTableContainer"></div>
+    </div>
 
-<div id="tab-locataires" class="tab-panel">
-    <div class="loc-table-wrap">
-      <div class="loc-table-header">
-        <h2>👤 Locataires</h2>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <input type="text" id="locSearchInput" placeholder="🔍 Rechercher..." oninput="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:220px">
-          <div class="ss-wrap" id="locFilterResWrap" style="min-width:220px"></div>
-    <span class="ss-arrow" id="locFilterResWrap_arrow">▼</span>
-    <div class="ss-dropdown" id="locFilterResWrap_drop">
-      <div class="ss-search"><input type="text" id="locFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
-      <div class="ss-list" id="locFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
-    </div></div>
-          <select id="locFilterStatut" onchange="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
-            <option value="all">Tous les statuts</option>
-            <option value="todo">⏳ Non réalisés</option>
-            <option value="done">✅ Réalisés</option>
+    <!-- INTERVENTIONS -->
+    <div id="tab-interventions" class="tab-panel">
+      <div class="toolbar">
+        <div class="search-bar" style="margin-bottom:0;flex:1">
+          <input type="text" id="intervSearchInput" placeholder="🔍 Rechercher locataire, résidence, technicien..." oninput="renderInterventionsTable()">
+          <div class="ss-wrap" id="intervFilterResWrap" style="min-width:200px"></div>
+          <span class="ss-arrow" id="intervFilterResWrap_arrow">▼</span>
+          <div class="ss-dropdown" id="intervFilterResWrap_drop">
+            <div class="ss-search"><input type="text" id="intervFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
+            <div class="ss-list" id="intervFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
+          </div>
+          <select id="intervFilterPeriod" onchange="renderInterventionsTable()">
+            <option value="">Toute période</option>
+            <option value="7">7 derniers jours</option>
+            <option value="30">30 derniers jours</option>
+            <option value="90">3 derniers mois</option>
+            <option value="365">Cette année</option>
           </select>
-          <select id="locSortBy" onchange="renderLocatairesTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
-            <option value="nom">Trier : Nom A→Z</option>
-            <option value="nom_desc">Trier : Nom Z→A</option>
+          <select id="intervSortBy" onchange="renderInterventionsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
+            <option value="date_desc">Trier : Date récente ↓</option>
+            <option value="date_asc">Trier : Date ancienne ↑</option>
+            <option value="nom">Trier : Locataire A→Z</option>
+            <option value="resultat">Trier : Résultat</option>
+          </select>
+        </div>
+        <button class="btn-add" onclick="openIntervModal()">➕ Ajouter intervention</button>
+      </div>
+      <div id="intervStatsContainer" style="margin-bottom:16px"></div>
+      <div id="interventionsTableContainer"></div>
+    </div>
+
+    <!-- VMC TOITURE -->
+    <div id="tab-vmc" class="tab-panel">
+      <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <h2 style="font-size:16px;font-weight:700;color:var(--primary)">💨 Interventions VMC – Toiture</h2>
+        <div style="display:flex;gap:10px;align-items:center">
+          <select id="vmcSortBy" onchange="renderVmcTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
             <option value="res">Trier : Résidence</option>
-            <option value="entretien_asc">Trier : Prochain entretien ↑</option>
-            <option value="entretien_desc">Trier : Prochain entretien ↓</option>
-            <option value="statut">Trier : Statut (à faire d'abord)</option>
+            <option value="prochain_asc">Trier : Prochain entretien ↑</option>
+            <option value="prochain_desc">Trier : Prochain entretien ↓</option>
           </select>
-          <button class="bailleur-btn" onclick="openBailleurView()">📄 Vue Bailleur</button>
-          <button class="btn-add" onclick="openLocModal()">+ Ajouter un locataire</button>
-      </div>
-      <div id="locatairesTableContainer"></div>
-    </div>
-  </div>
-
-  <!-- EQUIPEMENTS VMC -->
-  <div id="tab-equipements" class="tab-panel">
-    <div class="loc-table-wrap">
-      <div class="loc-table-header">
-        <h2>💨 Équipements VMC</h2>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <input type="text" id="equipSearchInput" placeholder="🔍 Rechercher résidence, équipement..." oninput="renderEquipementsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;min-width:220px">
-          <div class="ss-wrap" id="equipFilterResWrap" style="min-width:220px"></div>
-    <span class="ss-arrow" id="equipFilterResWrap_arrow">▼</span>
-    <div class="ss-dropdown" id="equipFilterResWrap_drop">
-      <div class="ss-search"><input type="text" id="equipFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
-      <div class="ss-list" id="equipFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
-    </div></div>
-          <select id="equipFilterStatus" onchange="renderEquipementsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
-            <option value="all">Tous les statuts</option>
-            <option value="done">✅ Entretenus</option>
-            <option value="todo">⏳ À planifier</option>
-          </select>
+          <button class="btn-add" onclick="openVmcModal()">➕ Ajouter fiche VMC</button>
         </div>
       </div>
-      <div id="equipTableContainer"></div>
-  </div>
-
-  <!-- CHAUDIERES -->
-  <div id="tab-chaudieres" class="tab-panel">
-    <div class="toolbar">
-      <div class="search-bar" style="margin-bottom:0;flex:1">
-        <input type="text" id="chaudSearchInput" placeholder="🔍 Rechercher locataire ou type de chaudière..." oninput="renderChaudieresTable()">
-        <div class="ss-wrap" id="chaudFilterResWrap" style="min-width:200px"></div>
-    <span class="ss-arrow" id="chaudFilterResWrap_arrow">▼</span>
-    <div class="ss-dropdown" id="chaudFilterResWrap_drop">
-      <div class="ss-search"><input type="text" id="chaudFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
-      <div class="ss-list" id="chaudFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
-    </div></div>
-      <button class="btn-add" onclick="openChaudModal()" style="margin-left:10px">➕ Ajouter chaudière</button>
+      <div id="vmcContainer"></div>
     </div>
-    <div id="chaudieresTableContainer"></div>
-  </div>
 
-  <!-- INTERVENTIONS -->
-  <div id="tab-interventions" class="tab-panel">
-    <div class="toolbar">
-      <div class="search-bar" style="margin-bottom:0;flex:1">
-        <input type="text" id="intervSearchInput" placeholder="🔍 Rechercher locataire, résidence, technicien..." oninput="renderInterventionsTable()">
-        <div class="ss-wrap" id="intervFilterResWrap" style="min-width:200px"></div>
-    <span class="ss-arrow" id="intervFilterResWrap_arrow">▼</span>
-    <div class="ss-dropdown" id="intervFilterResWrap_drop">
-      <div class="ss-search"><input type="text" id="intervFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
-      <div class="ss-list" id="intervFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
-    </div></div>
-        <select id="intervFilterPeriod" onchange="renderInterventionsTable()">
-          <option value="">Toute période</option>
-          <option value="7">7 derniers jours</option>
-          <option value="30">30 derniers jours</option>
-          <option value="90">3 derniers mois</option>
-          <option value="365">Cette année</option>
-        </select>
-        <select id="intervSortBy" onchange="renderInterventionsTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
-          <option value="date_desc">Trier : Date récente ↓</option>
-          <option value="date_asc">Trier : Date ancienne ↑</option>
-          <option value="nom">Trier : Locataire A→Z</option>
-          <option value="resultat">Trier : Résultat</option>
-        </select>
-      <button class="btn-add" onclick="openIntervModal()">➕ Ajouter intervention</button>
-    </div>
-    <div id="intervStatsContainer" style="margin-bottom:16px"></div>
-    <div id="interventionsTableContainer"></div>
-  </div>
-
-  <!-- VMC TOITURE -->
-  <div id="tab-vmc" class="tab-panel">
-    <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <h2 style="font-size:16px;font-weight:700;color:var(--primary)">💨 Interventions VMC – Toiture</h2>
-      <div style="display:flex;gap:10px;align-items:center">
-        <select id="vmcSortBy" onchange="renderVmcTable()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--white)">
-          <option value="res">Trier : Résidence</option>
-          <option value="prochain_asc">Trier : Prochain entretien ↑</option>
-          <option value="prochain_desc">Trier : Prochain entretien ↓</option>
-        </select>
-        <button class="btn-add" onclick="openVmcModal()">➕ Ajouter fiche VMC</button>
-      </div>
-    </div>
-    <div id="vmcContainer"></div>
-  </div>
-
-  <!-- PARAMÈTRES -->
-  <div id="tab-parametres" class="tab-panel">
-    <div style="max-width:860px;margin:0 auto">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div>
-          <h2 style="font-size:18px;font-weight:700;color:var(--primary)">⚙️ Paramètres – Gestion des résidences</h2>
-          <p style="font-size:13px;color:#888;margin-top:2px">Ajoutez, modifiez ou supprimez les résidences du lot.</p>
+    <!-- PARAMÈTRES -->
+    <div id="tab-parametres" class="tab-panel">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h2 style="font-size:18px;font-weight:700;color:var(--primary)">⚙️ Paramètres – Gestion des résidences</h2>
+            <p style="font-size:13px;color:#888;margin-top:2px">Ajoutez, modifiez ou supprimez les résidences du lot.</p>
+          </div>
+          <button class="btn-add" onclick="openResModal()">➕ Nouvelle résidence</button>
         </div>
-        <button class="btn-add" onclick="openResModal()">➕ Nouvelle résidence</button>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;align-items:center;background:var(--white);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow)">
+          <strong>Types :</strong>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#e67e22;border-radius:3px;display:inline-block"></span> Appareil + Ramonage + VMC</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#8e44ad;border-radius:3px;display:inline-block"></span> Appareil + VMC</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#2980b9;border-radius:3px;display:inline-block"></span> Appareil uniquement</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#27ae60;border-radius:3px;display:inline-block"></span> VMC uniquement</span>
+        </div>
+        <div id="paramResContainer"></div>
       </div>
-
-      <!-- Légende types -->
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;align-items:center;background:var(--white);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow)">
-        <strong>Types :</strong>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#e67e22;border-radius:3px;display:inline-block"></span> Appareil + Ramonage + VMC</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#8e44ad;border-radius:3px;display:inline-block"></span> Appareil + VMC</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#2980b9;border-radius:3px;display:inline-block"></span> Appareil uniquement</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#27ae60;border-radius:3px;display:inline-block"></span> VMC uniquement</span>
-      </div>
-
-      <div id="paramResContainer"></div>
     </div>
-  </div>
-</main>
+
+  </div><!-- /tabsContent -->
 </div><!-- /appScreen -->
+
+<div class="toast" id="toast"></div>
+
 
 <!-- MODAL COMMENTAIRE -->
 <div class="modal-overlay" id="modalOverlay">
@@ -902,7 +922,8 @@ body.readonly .readonly-badge { display:flex !important }
 </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+
 // ===================== SEARCHABLE SELECT =====================
 const _ssState = {}; // id → {value, label}
 
@@ -3916,67 +3937,8 @@ function copyShareLink() {
 }
 // ==================== FIN GESTION ACCÈS BAILLEURS ====================
 
+
 </script>
-
-<!-- MODAL SUSPENSION RÉSIDENCE -->
-<div id="suspendModalOverlay" class="modal-overlay" onclick="if(event.target===this)closeSuspendModal()">
-  <div class="modal" style="max-width:420px">
-    <h3>⏸️ Suspendre le contrat</h3>
-    <p style="color:#666;font-size:13px;margin-bottom:16px">Résidence : <strong id="suspendResNom"></strong></p>
-    <div class="form-group">
-      <label style="font-size:12px;color:#666;font-weight:600">Date de fin de contrat (optionnelle)</label>
-      <input type="date" id="suspendDateFin" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-top:4px">
-    </div>
-    <p style="color:#e67e22;font-size:12px;margin-top:10px">⚠️ La résidence apparaîtra en rouge dans toute l'application.</p>
-    <div class="modal-btns">
-      <button class="btn-secondary" onclick="closeSuspendModal()">Annuler</button>
-      <button class="btn-danger" onclick="confirmSuspendRes()">⏸️ Suspendre</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== MODALE IMPORT EXCEL LOCATAIRES ===== -->
-<div class="modal-overlay" id="importLocModalOverlay" style="display:none;z-index:9999">
-  <div class="modal" style="max-width:700px;width:95%;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h3 style="margin:0">📥 Importer un listing locataires</h3>
-      <button onclick="closeImportLocModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#666">✕</button>
-    </div>
-    <div id="importLocResName" style="font-weight:600;color:var(--primary);margin-bottom:12px;font-size:15px"></div>
-
-    <div id="importStep1">
-      <p style="color:#64748b;font-size:13px;margin-bottom:12px">
-        Sélectionnez un fichier Excel (.xlsx ou .xls). L'application détectera automatiquement les colonnes.
-      </p>
-      <label style="display:inline-block;background:var(--primary);color:#fff;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px">
-        📂 Choisir le fichier Excel
-        <input type="file" id="importLocFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportLocFile(this)">
-      </label>
-      <div id="importLocFileInfo" style="margin-top:8px;font-size:12px;color:#64748b"></div>
-    </div>
-
-    <div id="importStep2" style="display:none">
-      <div style="background:#f0f7ff;border-radius:8px;padding:12px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#1a5276">🗂️ Correspondance des colonnes</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="importColMapping"></div>
-      </div>
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">👁️ Aperçu (5 premières lignes)</div>
-      <div style="overflow-x:auto;margin-bottom:14px">
-        <table id="importPreviewTable" style="width:100%;border-collapse:collapse;font-size:11px"></table>
-      </div>
-      <div id="importLocCount" style="font-size:13px;color:#27ae60;font-weight:600;margin-bottom:12px"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="backToStep1()" style="flex:1;padding:10px;background:#e9ecef;border:none;border-radius:8px;cursor:pointer;font-size:13px">← Changer fichier</button>
-        <button onclick="confirmImportLoc()" style="flex:2;padding:10px;background:var(--success);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">✅ Importer les locataires</button>
-      </div>
-    </div>
-
-    <div id="importStep3" style="display:none;text-align:center;padding:20px">
-      <div id="importResultMsg" style="font-size:16px;font-weight:600;margin-bottom:12px"></div>
-      <button onclick="closeImportLocModal()" style="padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer">OK</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
