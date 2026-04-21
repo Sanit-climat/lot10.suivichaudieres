@@ -289,7 +289,7 @@ body.readonly .readonly-badge { display:flex !important }
 
 <!-- APP -->
 <div id="appScreen" style="display: none;">
-<div id="appHeader">
+<header>
   <div class="header-left">
     <h1>🔥 Suivi Entretien Chaudière</h1>
     <span>LOT 10 – Porte de Camargues</span>
@@ -299,7 +299,7 @@ body.readonly .readonly-badge { display:flex !important }
     <span id="userEmail"></span>
     <button id="btnLogout" onclick="doLogout()">Déconnexion</button>
   </div>
-</div>
+</header>
 
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Tableau de bord</button>
@@ -312,7 +312,7 @@ body.readonly .readonly-badge { display:flex !important }
   <button class="tab-btn" onclick="showTab('parametres',this)" style="margin-left:auto">⚙️ Paramètres</button>
 </div>
 
-<div id="mainContent">
+<main>
   <!-- DASHBOARD -->
   <div id="tab-dashboard" class="tab-panel active">
     <div class="stats-grid">
@@ -509,7 +509,7 @@ body.readonly .readonly-badge { display:flex !important }
       <div id="paramResContainer"></div>
     </div>
   </div>
-</div>
+</main>
 </div><!-- /appScreen -->
 
 <!-- MODAL COMMENTAIRE -->
