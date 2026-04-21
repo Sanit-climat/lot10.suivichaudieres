@@ -3713,30 +3713,34 @@ let _importRows = [];
 let _importColMap = {};
 
 const IMPORT_COL_LABELS = {
-  nom:    { label: 'Nom locataire', required: true },
-  ref:    { label: 'Référence', required: false },
-  bat:    { label: 'Bâtiment', required: false },
-  esc:    { label: 'Escalier', required: false },
-  etage:  { label: 'Étage', required: false },
-  lgt:    { label: 'N° logement', required: false },
-  type:   { label: 'Type (T2/T3...)', required: false },
-  tel:    { label: 'Téléphone', required: false },
-  email:  { label: 'Email', required: false },
-  adresse:{ label: 'Adresse', required: false },
+  nom:           { label: 'Nom locataire', required: true },
+  ref:           { label: 'Référence', required: false },
+  bat:           { label: 'Bâtiment', required: false },
+  esc:           { label: 'Escalier', required: false },
+  etage:         { label: 'Étage', required: false },
+  lgt:           { label: 'N° logement', required: false },
+  type:          { label: 'Type (T2/T3...)', required: false },
+  tel:           { label: 'Téléphone', required: false },
+  email:         { label: 'Email', required: false },
+  adresse:       { label: 'Adresse', required: false },
+  dateEntretien: { label: '📅 Date entretien réalisé', required: false },
+  dateProchain:  { label: '📅 Date prochain entretien', required: false },
 };
 
 // Détection automatique des colonnes
 const COL_HINTS = {
-  nom:    ['nom','name','locataire','titulaire','prenomnom','tenant'],
-  ref:    ['ref','référence','reference','code','num'],
-  bat:    ['bat','bâtiment','batiment','building'],
-  esc:    ['esc','escalier','staircase'],
-  etage:  ['etage','étage','floor','niv','niveau'],
-  lgt:    ['lgt','logement','appt','appartement','no','n°'],
-  type:   ['type','typolog'],
-  tel:    ['tel','phone','mobile','port','fixe','contact'],
-  email:  ['email','mail','courriel'],
-  adresse:['adresse','address','rue'],
+  nom:           ['nom','name','locataire','titulaire','prenomnom','tenant'],
+  ref:           ['ref','référence','reference','code','num'],
+  bat:           ['bat','bâtiment','batiment','building'],
+  esc:           ['esc','escalier','staircase'],
+  etage:         ['etage','étage','floor','niv','niveau'],
+  lgt:           ['lgt','logement','appt','appartement','no','n°'],
+  type:          ['type','typolog'],
+  tel:           ['tel','phone','mobile','port','fixe','contact'],
+  email:         ['email','mail','courriel'],
+  adresse:       ['adresse','address','rue'],
+  dateEntretien: ['date entretien','date_entretien','dateentretien','entretien','date realise','date réalisé','date visite','visite','realise','réalisé','dt_entretien','date_visite'],
+  dateProchain:  ['prochain','date prochain','dateprochain','prochaine visite','next','date_prochain','prochaine','prochain entretien'],
 };
 
 function guessColumn(headers, field) {
@@ -3860,66 +3864,142 @@ async function confirmImportLoc() {
   const res = RESIDENCES_DATA[_importResIdx];
   const ri = _importResIdx;
 
-  // Lire les en-têtes depuis le dernier fichier parsé
-  // On va reconstruire à partir du mapping
   const btn = document.querySelector('#importStep2 button:last-child');
   btn.disabled = true;
   btn.textContent = '⏳ Import en cours...';
 
   let imported = 0;
+  let withDate = 0;
   let errors = 0;
   const updates = {};
 
-  _importRows.forEach((row, idx) => {
-    // Construire l'objet locataire
-    function getVal(field) {
-      const colName = _importColMap[field];
-      if (!colName) return '';
-      // Trouver l'index en cherchant dans la ligne
-      // On doit retrouver les headers - ils sont dans les selects
-      const sel = document.getElementById('imap_' + field);
-      if (!sel) return '';
-      const headerCells = document.querySelectorAll('#importPreviewTable thead th');
-      const headers = Array.from(headerCells).map(th => th.textContent.trim());
-      const colIdx = headers.indexOf(colName);
-      if (colIdx < 0 || colIdx >= row.length) return '';
-      return row[colIdx] ? row[colIdx].toString().trim() : '';
-    }
+  // Récupérer les headers depuis le tableau d'aperçu
+  const headerCells = document.querySelectorAll('#importPreviewTable thead th');
+  const headers = Array.from(headerCells).map(th => th.textContent.trim());
 
-    const nom = getVal('nom');
+  function getVal(field) {
+    const colName = _importColMap[field];
+    if (!colName) return '';
+    const colIdx = headers.indexOf(colName);
+    return ''; // sera utilisé avec row
+  }
+
+  function getRowVal(row, field) {
+    const colName = _importColMap[field];
+    if (!colName) return '';
+    const colIdx = headers.indexOf(colName);
+    if (colIdx < 0 || colIdx >= row.length) return '';
+    return row[colIdx] ? row[colIdx].toString().trim() : '';
+  }
+
+  // Normaliser une date Excel (peut être nombre ou chaîne)
+  function normalizeDate(val) {
+    if (!val) return '';
+    // Nombre Excel (jours depuis 1900)
+    if (!isNaN(val) && val > 1000) {
+      try {
+        const d = new Date(Math.round((parseFloat(val) - 25569) * 86400 * 1000));
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      } catch(e) {}
+    }
+    // Chaîne date française JJ/MM/AAAA
+    const strVal = val.toString().trim();
+    const frMatch = strVal.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+    if (frMatch) {
+      const y = frMatch[3].length === 2 ? '20' + frMatch[3] : frMatch[3];
+      const m = frMatch[2].padStart(2, '0');
+      const d = frMatch[1].padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    // ISO AAAA-MM-JJ
+    const isoMatch = strVal.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) return strVal.slice(0, 10);
+    return '';
+  }
+
+  _importRows.forEach((row, idx) => {
+    const nom = getRowVal(row, 'nom');
     if (!nom) { errors++; return; }
 
-    const locKey = `r${ri}_l${1000 + idx}`; // offset 1000 pour éviter conflits avec statiques
+    const locKey = `r${ri}_l${1000 + idx}`;
+
+    // Dates
+    const rawDateEntretien = getRowVal(row, 'dateEntretien');
+    const rawDateProchain  = getRowVal(row, 'dateProchain');
+    const dateEntretien    = normalizeDate(rawDateEntretien);
+    let   dateProchain     = normalizeDate(rawDateProchain);
+
+    // Si date entretien mais pas prochain → calculer +1 an
+    if (dateEntretien && !dateProchain) {
+      try {
+        const d = new Date(dateEntretien);
+        d.setFullYear(d.getFullYear() + 1);
+        dateProchain = d.toISOString().slice(0, 10);
+      } catch(e) {}
+    }
+
     const locData = {
-      nom, 
-      ref:     getVal('ref'),
-      bat:     getVal('bat'),
-      esc:     getVal('esc'),
-      etage:   getVal('etage'),
-      lgt:     getVal('lgt'),
-      type:    getVal('type'),
-      tel:     getVal('tel'),
-      email:   getVal('email'),
-      adresse: getVal('adresse'),
+      nom,
+      ref:     getRowVal(row, 'ref'),
+      bat:     getRowVal(row, 'bat'),
+      esc:     getRowVal(row, 'esc'),
+      etage:   getRowVal(row, 'etage'),
+      lgt:     getRowVal(row, 'lgt'),
+      type:    getRowVal(row, 'type'),
+      tel:     getRowVal(row, 'tel'),
+      email:   getRowVal(row, 'email'),
+      adresse: getRowVal(row, 'adresse'),
+      dateEntretienPrec:      dateEntretien || '',
+      dateProchainEntretien:  dateProchain  || '',
       _resIdx: ri,
       _resNom: res.nom,
       _imported: true,
       _importedAt: new Date().toISOString(),
     };
-    updates[locKey] = locData;
+    updates['lot10_locataires/' + locKey] = locData;
+
+    // Si date entretien → marquer comme fait dans lot10 + créer intervention
+    if (dateEntretien) {
+      withDate++;
+      updates['lot10/' + locKey] = {
+        done: true,
+        date: dateEntretien,
+        dateProchain: dateProchain,
+        doneAt: new Date(dateEntretien).toISOString(),
+        doneBy: 'import',
+      };
+      // Créer une intervention
+      const intervKey = 'interv_' + locKey;
+      updates['lot10_interventions/' + intervKey] = {
+        resIdx:      ri,
+        resNom:      res.nom,
+        locIdx:      1000 + idx,
+        locNom:      nom,
+        locRef:      locData.ref || '',
+        date:        dateEntretien,
+        type:        'Entretien annuel chaudière',
+        resultat:    'ok',
+        technicien:  '',
+        commentaire: '',
+        createdAt:   new Date(dateEntretien).toISOString(),
+      };
+    }
+
     imported++;
   });
 
   try {
-    // Écrire dans Firebase lot10_locataires
-    await db.ref('lot10_locataires').update(updates);
+    // Tout écrire en une seule opération Firebase
+    await db.ref().update(updates);
 
     document.getElementById('importStep2').style.display = 'none';
     document.getElementById('importStep3').style.display = '';
-    document.getElementById('importResultMsg').innerHTML = 
-      `✅ Import réussi !<br><span style="font-size:14px;color:#27ae60">${imported} locataires importés</span>` +
+    document.getElementById('importResultMsg').innerHTML =
+      `✅ Import réussi !<br>` +
+      `<span style="font-size:14px;color:#27ae60">${imported} locataires importés</span>` +
+      (withDate ? `<br><span style="font-size:13px;color:var(--primary)">📅 ${withDate} entretiens créés dans le tableau de bord</span>` : '<br><span style="font-size:12px;color:#888">Aucune date d'entretien détectée — avancement non mis à jour</span>') +
       (errors ? `<br><span style="font-size:12px;color:#e67e22">${errors} lignes ignorées (nom manquant)</span>` : '');
-    showToast('✅ ' + imported + ' locataires importés pour ' + res.nom);
+    showToast('✅ ' + imported + ' locataires + ' + withDate + ' entretiens importés pour ' + res.nom);
     renderAll();
   } catch(err) {
     btn.disabled = false;
