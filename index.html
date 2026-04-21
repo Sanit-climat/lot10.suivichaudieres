@@ -2341,13 +2341,24 @@ window.askDeleteLocataire = function(resIdx, locIdx, newKey) {
   if (isReadOnly) return;
   const overlay = document.getElementById('confirmOverlay');
   let nom = '';
-  if (newKey) { nom = (locOverrides[newKey]?.nom || 'ce locataire'); }
-  else { nom = RESIDENCES_DATA[resIdx].locataires[locIdx].nom; }
+  // newKey peut être: 'new_xxx' (ajout manuel) OU 'r{ri}_l{1000+}' (importé Excel)
+  if (newKey) {
+    nom = (locOverrides[newKey]?.nom || 'ce locataire');
+  } else if (resIdx !== null && resIdx !== undefined && locIdx !== null && locIdx !== undefined) {
+    const loc = RESIDENCES_DATA[resIdx]?.locataires[locIdx];
+    nom = loc?.nom || 'ce locataire';
+  }
   document.getElementById('confirmMsg').textContent = `Supprimer "${nom}" ? Cette action est irréversible.`;
   confirmDeleteFn = () => {
-    if (newKey) {
+    if (newKey && newKey.startsWith('new_')) {
+      // Ajout manuel → marquer _deleted
       db.ref(`lot10_locataires/${newKey}`).update({ _deleted: true });
+    } else if (newKey) {
+      // Locataire importé Excel (r{ri}_l{1000+}) → écrire une clé de suppression
+      db.ref(`lot10_locataires/del_${newKey}`).set(true);
+      db.ref(`lot10_locataires/${newKey}`).remove();
     } else {
+      // Locataire statique → clé de suppression
       const delKey = `del_r${resIdx}_l${locIdx}`;
       db.ref(`lot10_locataires/${delKey}`).set(true);
     }
@@ -2659,7 +2670,8 @@ function renderLocatairesTable() {
     ).length;
 
     const editCall = loc._isNew ? `openLocModalNew('${loc._key}')` : `openLocModal(${loc._resIdx},${loc._locIdx})`;
-    const delCall = loc._isNew ? `askDeleteLocataire(null,null,'${loc._key}')` : `askDeleteLocataire(${loc._resIdx},${loc._locIdx})`;
+    const isImported = !loc._isNew && loc._locIdx >= 1000;
+    const delCall = loc._isNew ? `askDeleteLocataire(null,null,'${loc._key}')` : isImported ? `askDeleteLocataire(null,null,'${loc._key}')` : `askDeleteLocataire(${loc._resIdx},${loc._locIdx})`;
 
     rows += `<tr>
       <td>
