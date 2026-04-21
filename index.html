@@ -1989,6 +1989,92 @@ let confirmDeleteFn = null;
 // Overrides Firebase pour les locataires (modifs + ajouts + suppressions)
 let locOverrides = {}; // { 'r0_l5': {...fields}, 'new_abc': {...}, 'del_r0_l5': true }
 
+
+// ===================== SEED INTERVENTIONS DEPUIS DATES =====================
+function seedInterventionsFromDates() {
+  // Parcourt TOUS les locataires (statiques + importés)
+  // Pour chacun ayant une date d'entretien dans locOverrides ou RESIDENCES_DATA
+  // et sans intervention ni statut done → crée l'intervention + marque done
+  const updates = {};
+  let count = 0;
+
+  function processLoc(ri, li, nom, ref, resNom, dateEntretien, dateProchain) {
+    if (!dateEntretien) return;
+    const k = `r${ri}_l${li}`;
+    if (locOverrides['del_' + k]) return;
+    // Ne pas re-créer si déjà marqué done dans dbData
+    if (dbData[k] && dbData[k].done) return;
+    // Calculer date prochain si absente
+    if (!dateProchain) {
+      try {
+        const d = new Date(dateEntretien);
+        d.setFullYear(d.getFullYear() + 1);
+        dateProchain = d.toISOString().slice(0, 10);
+      } catch(e) {}
+    }
+    // Écrire done dans lot10
+    updates['lot10/' + k] = {
+      done: true,
+      date: dateEntretien,
+      dateProchain: dateProchain || '',
+      doneAt: dateEntretien + 'T00:00:00.000Z',
+      doneBy: 'import',
+    };
+    // Créer intervention si elle n'existe pas déjà
+    const intervKey = 'interv_' + k;
+    if (!intervData[intervKey]) {
+      updates['lot10_interventions/' + intervKey] = {
+        resIdx:      ri,
+        resNom:      resNom,
+        locIdx:      li,
+        locNom:      nom,
+        locRef:      ref || '',
+        date:        dateEntretien,
+        type:        'Entretien annuel chaudière',
+        resultat:    'ok',
+        technicien:  '',
+        commentaire: '',
+        createdAt:   dateEntretien + 'T00:00:00.000Z',
+      };
+    }
+    count++;
+  }
+
+  // 1. Locataires statiques (indices 0 à N-1)
+  RESIDENCES_DATA.forEach((res, ri) => {
+    res.locataires.forEach((loc, li) => {
+      const ovr = locOverrides[`r${ri}_l${li}`] || {};
+      // Priorité : locOverrides, puis données statiques
+      const dateEntretien = ovr.dateEntretienPrec || loc.dateEntretienPrec || '';
+      const dateProchain  = ovr.dateProchainEntretien || loc.dateProchainEntretien || '';
+      const nom = ovr.nom || loc.nom || '';
+      const ref = ovr.ref || loc.ref || '';
+      processLoc(ri, li, nom, ref, res.nom, dateEntretien, dateProchain);
+    });
+  });
+
+  // 2. Locataires importés (indices ≥ 1000)
+  Object.keys(locOverrides).forEach(k => {
+    const km = k.match(/^r(\d+)_l(\d+)$/);
+    if (!km || parseInt(km[2]) < 1000) return;
+    const ri  = parseInt(km[1]);
+    const li  = parseInt(km[2]);
+    const loc = locOverrides[k];
+    if (!loc || loc._deleted || !loc.nom) return;
+    if (locOverrides['del_' + k]) return;
+    const res = RESIDENCES_DATA[ri];
+    processLoc(ri, li, loc.nom, loc.ref || '', loc._resNom || (res ? res.nom : ''),
+               loc.dateEntretienPrec || '', loc.dateProchainEntretien || '');
+  });
+
+  if (count > 0) {
+    db.ref().update(updates).then(() => {
+      console.log('seedInterventionsFromDates: ' + count + ' interventions créées');
+      showToast('✅ ' + count + ' entretiens chargés depuis les dates importées');
+    });
+  }
+}
+
 function startListeningLocOverrides() {
   db.ref('lot10_locataires').on('value', snap => {
     const firebaseOv = snap.val() || {};
@@ -2024,62 +2110,8 @@ function startListeningLocOverrides() {
       }
     });
 
-    // Créer les entrées Firebase pour les locataires importés avec dates
-    const seedImportUpdates = {};
-    let seedImportCount = 0;
-    Object.keys(locOverrides).forEach(k => {
-      const km = k.match(/^r(\d+)_l(\d+)$/);
-      if (!km || parseInt(km[2]) < 1000) return;
-      const ri = parseInt(km[1]);
-      const loc = locOverrides[k];
-      if (!loc || loc._deleted || !loc.nom) return;
-      if (locOverrides['del_' + k]) return;
-      const dateEntretien = loc.dateEntretienPrec || '';
-      if (!dateEntretien) return;
-      // Ne pas re-créer si déjà marqué done
-      if (dbData[k] && dbData[k].done) return;
-      // Calculer date prochain
-      let dateProchain = loc.dateProchainEntretien || '';
-      if (!dateProchain && dateEntretien) {
-        try {
-          const d = new Date(dateEntretien);
-          d.setFullYear(d.getFullYear() + 1);
-          dateProchain = d.toISOString().slice(0, 10);
-        } catch(e) {}
-      }
-      // Marquer comme fait dans lot10
-      seedImportUpdates['lot10/' + k] = {
-        done: true,
-        date: dateEntretien,
-        dateProchain: dateProchain,
-        doneAt: new Date(dateEntretien + 'T00:00:00.000Z').toISOString(),
-        doneBy: 'import',
-      };
-      // Créer intervention
-      const intervKey = 'interv_' + k;
-      if (!intervData[intervKey]) {
-        const res = RESIDENCES_DATA[ri];
-        seedImportUpdates['lot10_interventions/' + intervKey] = {
-          resIdx:      ri,
-          resNom:      loc._resNom || (res ? res.nom : ''),
-          locIdx:      parseInt(km[2]),
-          locNom:      loc.nom,
-          locRef:      loc.ref || '',
-          date:        dateEntretien,
-          type:        'Entretien annuel chaudière',
-          resultat:    'ok',
-          technicien:  '',
-          commentaire: '',
-          createdAt:   new Date(dateEntretien + 'T00:00:00.000Z').toISOString(),
-        };
-      }
-      seedImportCount++;
-    });
-    if (seedImportCount > 0) {
-      db.ref().update(seedImportUpdates).then(() => {
-        console.log('Seed importés: ' + seedImportCount + ' entretiens créés');
-      });
-    }
+    // Créer automatiquement les interventions manquantes pour TOUS les locataires avec dates
+    seedInterventionsFromDates();
 
     if (document.getElementById('tab-locataires')?.classList.contains('active')) renderLocatairesTable();
     if (document.getElementById('tab-chaudieres')?.classList.contains('active')) renderChaudieresTable();
