@@ -3997,7 +3997,7 @@ async function confirmImportLoc() {
     document.getElementById('importResultMsg').innerHTML =
       `✅ Import réussi !<br>` +
       `<span style="font-size:14px;color:#27ae60">${imported} locataires importés</span>` +
-      (withDate ? `<br><span style="font-size:13px;color:var(--primary)">📅 ${withDate} entretiens créés dans le tableau de bord</span>` : '<br><span style="font-size:12px;color:#888">Aucune date d'entretien détectée — avancement non mis à jour</span>') +
+      (withDate ? `<br><span style="font-size:13px;color:var(--primary)">📅 ${withDate} entretiens créés dans le tableau de bord</span>` : `<br><span style="font-size:12px;color:#888">Aucune date d'entretien détectée — avancement non mis à jour</span>`) +
       (errors ? `<br><span style="font-size:12px;color:#e67e22">${errors} lignes ignorées (nom manquant)</span>` : '');
     showToast('✅ ' + imported + ' locataires + ' + withDate + ' entretiens importés pour ' + res.nom);
     renderAll();
