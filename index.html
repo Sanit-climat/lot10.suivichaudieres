@@ -359,7 +359,6 @@ body.readonly .readonly-badge { display:flex !important }
       <div class="ss-list" id="filterResidenceWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
     </div></div>
       <button class="btn-add" onclick="openResModal()" style="white-space:nowrap">➕ Nouvelle résidence</button>
-    </div>
     <div class="legend-bar">
   <strong style="margin-right:4px">Prestations :</strong>
   <span class="legend-item"><span class="legend-dot" style="background:#e67e22"></span> Appareil de production + Ramonage + VMC</span>
@@ -424,7 +423,6 @@ id="tab-locataires" class="tab-panel">
         </div>
       </div>
       <div id="equipTableContainer"></div>
-    </div>
   </div>
 
   <!-- CHAUDIERES -->
@@ -438,7 +436,6 @@ id="tab-locataires" class="tab-panel">
       <div class="ss-search"><input type="text" id="chaudFilterResWrap_search" placeholder="🔍 Rechercher..." autocomplete="off"></div>
       <div class="ss-list" id="chaudFilterResWrap_list"><div class="ss-option selected" data-value="">Toutes les résidences</div></div>
     </div></div>
-      </div>
       <button class="btn-add" onclick="openChaudModal()" style="margin-left:10px">➕ Ajouter chaudière</button>
     </div>
     <div id="chaudieresTableContainer"></div>
@@ -468,7 +465,6 @@ id="tab-locataires" class="tab-panel">
           <option value="nom">Trier : Locataire A→Z</option>
           <option value="resultat">Trier : Résultat</option>
         </select>
-      </div>
       <button class="btn-add" onclick="openIntervModal()">➕ Ajouter intervention</button>
     </div>
     <div id="intervStatsContainer" style="margin-bottom:16px"></div>
@@ -1075,8 +1071,9 @@ let resContractData = {}; // statut contrat par résidence (index)
 // Liste des emails en mode lecture seule (bailleur)
 // Ajoutez ici les emails des comptes bailleur
 const READONLY_EMAILS = [
-  'bailleur@lot1-camargues.fr',
-  // Ajoutez d'autres emails bailleur ici si besoin
+  // Emails des gestionnaires (accès lecture seule)
+  // Ajoutez ici les emails des interlocuteurs bailleur Groupe 3F SUD / Porte de Camargues
+  // Exemple: 'gestionnaire@3fsud.fr'
 ];
 
 
@@ -1141,6 +1138,7 @@ auth.onAuthStateChanged(user => {
     startListeningChaudieres();
     startListeningSuivi();
     startListeningVmc();
+    startListeningBailleurs();
   } else {
     isReadOnly = false;
     document.body.classList.remove('readonly');
@@ -1548,6 +1546,11 @@ function renderAccordion() {
           <tbody>${rows || '<tr><td colspan="11" style="text-align:center;color:#aaa;padding:20px">Aucun résultat</td></tr>'}</tbody>
         </table>
         </div>
+        ${!isReadOnly ? `
+        <div style="display:flex;gap:8px;padding:10px 0 4px;flex-wrap:wrap">
+          <button class="btn-sm btn-ok" style="font-size:12px" onclick="openLocModal(${ri})">➕ Ajouter un locataire</button>
+          <button class="btn-sm" style="background:#8e44ad;color:#fff;font-size:12px" onclick="openImportLocModal(${ri})">📥 Importer listing Excel</button>
+        </div>` : ''}
       </div>`;
     cont.appendChild(div);
   });
@@ -3694,6 +3697,8 @@ function renderImportPreview(headers) {
   table.innerHTML = `
     <thead><tr style="background:#f8fafc">${headers.map(h=>`<th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:left;white-space:nowrap;color:#64748b">${h||'?'}</th>`).join('')}</tr></thead>
     <tbody>${preview.map(row=>`<tr>${row.map(c=>`<td style="padding:3px 8px;border:1px solid #e2e8f0;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+  
+
   `;
 }
 
@@ -3774,6 +3779,74 @@ async function confirmImportLoc() {
   }
 }
 // ==================== FIN IMPORT EXCEL LOCATAIRES ====================
+
+
+// ==================== GESTION ACCÈS BAILLEURS ====================
+window._bailleurEmails = [];
+
+function startListeningBailleurs() {
+  db.ref('lot10_readonly').on('value', snap => {
+    const data = snap.val() || {};
+    window._bailleurEmails = Object.values(data).filter(Boolean);
+    // Mettre à jour isReadOnly si l'email courant est dans la liste
+    if (currentUser) {
+      const email = currentUser.email.toLowerCase();
+      const staticReadonly = ['/* emails statiques si besoin */'];
+      isReadOnly = staticReadonly.includes(email) || 
+                   window._bailleurEmails.map(e=>e.toLowerCase()).includes(email);
+      if (isReadOnly) {
+        document.body.classList.add('readonly');
+      } else {
+        document.body.classList.remove('readonly');
+      }
+    }
+    // Rafraîchir la section bailleurs si ouverte
+    if (document.getElementById('tab-parametres')?.classList.contains('active')) {
+      renderParamResidences();
+    }
+  });
+}
+
+function addBailleurEmail() {
+  const input = document.getElementById('newBailleurEmail');
+  const email = input.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    showToast('⚠️ Email invalide'); return;
+  }
+  if (window._bailleurEmails.map(e=>e.toLowerCase()).includes(email)) {
+    showToast('⚠️ Email déjà dans la liste'); return;
+  }
+  // Générer une clé Firebase
+  const key = email.replace(/[.@]/g, '_');
+  db.ref('lot10_readonly/' + key).set(email).then(() => {
+    input.value = '';
+    showToast('✅ Email bailleur ajouté');
+  });
+}
+
+function removeBailleurEmail(email) {
+  const key = email.replace(/[.@]/g, '_');
+  db.ref('lot10_readonly/' + key).remove().then(() => {
+    showToast('🗑️ Email supprimé');
+  });
+}
+
+function copyShareLink() {
+  const link = window.location.href.split('?')[0]; // URL sans paramètres
+  navigator.clipboard.writeText(link).then(() => {
+    showToast('📋 Lien copié !');
+  }).catch(() => {
+    // Fallback
+    const el = document.createElement('textarea');
+    el.value = link;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('📋 Lien copié !');
+  });
+}
+// ==================== FIN GESTION ACCÈS BAILLEURS ====================
 
 </script>
 
