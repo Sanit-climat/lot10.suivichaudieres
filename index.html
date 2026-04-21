@@ -2024,6 +2024,63 @@ function startListeningLocOverrides() {
       }
     });
 
+    // Créer les entrées Firebase pour les locataires importés avec dates
+    const seedImportUpdates = {};
+    let seedImportCount = 0;
+    Object.keys(locOverrides).forEach(k => {
+      const km = k.match(/^r(\d+)_l(\d+)$/);
+      if (!km || parseInt(km[2]) < 1000) return;
+      const ri = parseInt(km[1]);
+      const loc = locOverrides[k];
+      if (!loc || loc._deleted || !loc.nom) return;
+      if (locOverrides['del_' + k]) return;
+      const dateEntretien = loc.dateEntretienPrec || '';
+      if (!dateEntretien) return;
+      // Ne pas re-créer si déjà marqué done
+      if (dbData[k] && dbData[k].done) return;
+      // Calculer date prochain
+      let dateProchain = loc.dateProchainEntretien || '';
+      if (!dateProchain && dateEntretien) {
+        try {
+          const d = new Date(dateEntretien);
+          d.setFullYear(d.getFullYear() + 1);
+          dateProchain = d.toISOString().slice(0, 10);
+        } catch(e) {}
+      }
+      // Marquer comme fait dans lot10
+      seedImportUpdates['lot10/' + k] = {
+        done: true,
+        date: dateEntretien,
+        dateProchain: dateProchain,
+        doneAt: new Date(dateEntretien + 'T00:00:00.000Z').toISOString(),
+        doneBy: 'import',
+      };
+      // Créer intervention
+      const intervKey = 'interv_' + k;
+      if (!intervData[intervKey]) {
+        const res = RESIDENCES_DATA[ri];
+        seedImportUpdates['lot10_interventions/' + intervKey] = {
+          resIdx:      ri,
+          resNom:      loc._resNom || (res ? res.nom : ''),
+          locIdx:      parseInt(km[2]),
+          locNom:      loc.nom,
+          locRef:      loc.ref || '',
+          date:        dateEntretien,
+          type:        'Entretien annuel chaudière',
+          resultat:    'ok',
+          technicien:  '',
+          commentaire: '',
+          createdAt:   new Date(dateEntretien + 'T00:00:00.000Z').toISOString(),
+        };
+      }
+      seedImportCount++;
+    });
+    if (seedImportCount > 0) {
+      db.ref().update(seedImportUpdates).then(() => {
+        console.log('Seed importés: ' + seedImportCount + ' entretiens créés');
+      });
+    }
+
     if (document.getElementById('tab-locataires')?.classList.contains('active')) renderLocatairesTable();
     if (document.getElementById('tab-chaudieres')?.classList.contains('active')) renderChaudieresTable();
     renderAccordion();
