@@ -1489,6 +1489,58 @@ function renderAccordion() {
       </tr>`;
     });
     
+    // Locataires importés Excel (r{ri}_l{1000+})
+    Object.keys(locOverrides).forEach(k => {
+      const km = k.match(/^r(\d+)_l(\d+)$/);
+      if (!km || parseInt(km[1]) !== ri || parseInt(km[2]) < 1000) return;
+      const loc = locOverrides[k];
+      if (!loc || loc._deleted || !loc.nom) return;
+      if (locOverrides['del_' + k]) return;
+      const li = parseInt(km[2]);
+      const d = dbData[k] || {};
+      const _ovr = locOverrides[k] || {};
+      const _nxt = _ovr.dateProchainEntretien || '';
+      const isDone = !!d.done || !!(_ovr.dateEntretienPrec && _ovr.dateEntretienPrec !== '')
+        || (parseInt(_nxt.slice(0,4))||0) >= 2027;
+      count++;
+      if (st === 'done' && !isDone) return;
+      if (st === 'todo' && isDone) return;
+      if (q) {
+        const haystack = (loc.nom + (loc.ref||'') + (loc.lgt||'')).toLowerCase();
+        if (!haystack.includes(q)) return;
+      }
+      shown++;
+      const loc_info = [
+        loc.bat ? `Bat ${loc.bat}` : '',
+        loc.esc ? `Esc ${loc.esc}` : '',
+        loc.etage !== '' ? `Ét ${loc.etage}` : '',
+        loc.lgt ? `Lgt ${loc.lgt}` : ''
+      ].filter(Boolean).join(' / ');
+      const telLink = loc.tel ? `<a href="tel:${loc.tel}" style="color:var(--secondary)">${loc.tel}</a>` : '—';
+      const dateStr = d.date || '';
+      const prochainDate = _ovr.dateProchainEntretien || '';
+      const commentStr = d.comment ? `<br><span style="color:#888;font-size:11px">💬 ${d.comment}</span>` : '';
+      rows += `<tr class="${isDone ? 'done' : 'todo'}">
+        <td>${isDone ? '✅' : '⏳'}</td>
+        <td><b>${loc.nom}</b>${commentStr}</td>
+        <td style="font-size:11px;color:#666">${loc.ref || '—'}</td>
+        <td style="font-size:12px">${loc_info || '—'}</td>
+        <td style="font-size:12px">${loc.type || '—'}</td>
+        <td><span style="color:#ddd;font-size:11px">—</span></td>
+        <td>${telLink}</td>
+        <td>${loc.email ? `<a href="mailto:${loc.email}" style="color:var(--secondary);font-size:11px">${loc.email}</a>` : '—'}</td>
+        <td style="font-size:11px">${fmtDate(d.date)}</td>
+        <td style="white-space:nowrap">${echeanceBadge(prochainDate)}</td>
+        <td>
+          ${isDone
+            ? `<button class="btn-sm btn-undo" onclick="toggleDone('${k}',false)">Annuler</button>`
+            : `<button class="btn-sm btn-ok" onclick="toggleDone('${k}',true)">✓ Fait</button>`}
+          <button class="btn-sm btn-comment" onclick="openModal('${k}','${(d.comment||'').replace(/'/g,"\\'")}','${dateStr}')" style="margin-left:4px">💬</button>
+          <button class="btn-sm btn-delete" onclick="askDeleteLocataire(${ri},${li},'${k}')" style="margin-left:4px" title="Supprimer">🗑️</button>
+        </td>
+      </tr>`;
+    });
+
     if (q || st !== 'all') {
       if (shown === 0) return;
     }
@@ -1502,6 +1554,15 @@ function renderAccordion() {
     res.locataires.forEach((_, li) => {
       const k = getKey(ri, li);
       if (dbData[k] && dbData[k].done) doneRes++;
+    });
+    // Ajouter les locataires importés au compteur
+    Object.keys(locOverrides).forEach(k => {
+      const km = k.match(/^r(\d+)_l(\d+)$/);
+      if (!km || parseInt(km[1]) !== ri || parseInt(km[2]) < 1000) return;
+      const loc = locOverrides[k];
+      if (!loc || loc._deleted || !loc.nom) return;
+      totalRes++;
+      if (dbData[k]?.done) doneRes++;
     });
     
     const _contract = resContractData[ri] || {};
@@ -1926,13 +1987,42 @@ function getMergedLocataires() {
       });
     });
   });
-  // Ajouter les nouveaux locataires
+  // Ajouter les nouveaux locataires (ajout manuel new_xxx)
   Object.keys(locOverrides).forEach(k => {
     if (k.startsWith('new_')) {
       const loc = locOverrides[k];
       if (!loc._deleted) result.push({ ...loc, _key: k, _isNew: true });
     }
   });
+
+  // Ajouter les locataires importés via Excel (clés r{ri}_l{1000+idx})
+  Object.keys(locOverrides).forEach(k => {
+    const m = k.match(/^r(\d+)_l(\d+)$/);
+    if (!m) return;
+    const ri = parseInt(m[1]);
+    const li = parseInt(m[2]);
+    if (li < 1000) return; // locataires statiques déjà traités
+    const loc = locOverrides[k];
+    if (!loc || loc._deleted) return;
+    if (!loc.nom) return;
+    const delKey = `del_${k}`;
+    if (locOverrides[delKey]) return;
+    const dEntry = dbData[k] || {};
+    const dateProchainEntretien = loc.dateProchainEntretien || dEntry.dateProchain || '';
+    result.push({
+      ...loc,
+      dateProchainEntretien,
+      _resIdx: ri,
+      _locIdx: li,
+      _key: k,
+      _resNom: loc._resNom || (RESIDENCES_DATA[ri]?.nom || ''),
+      _isNew: false,
+      _done: !!dEntry.done || !!(loc.dateEntretienPrec && loc.dateEntretienPrec !== '')
+        || !!(loc.dateEntretien2026 && loc.dateEntretien2026 !== '')
+        || (parseInt((dateProchainEntretien || '').slice(0, 4)) || 0) >= 2027
+    });
+  });
+
   return result;
 }
 
