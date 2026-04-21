@@ -523,6 +523,7 @@ body.readonly .readonly-badge { display:flex !important }
           <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#27ae60;border-radius:3px;display:inline-block"></span> VMC uniquement</span>
         </div>
         <div id="paramResContainer"></div>
+        <div id="bailleurSection"></div>
       </div>
     </div>
 
@@ -1737,6 +1738,31 @@ function renderParamResidences() {
       </table>
       <p style="font-size:12px;color:#aaa;padding:10px 16px;text-align:right">${RESIDENCES_DATA.length} résidence(s) au total</p>
     </div>`;
+
+  // Section Accès bailleurs
+  const bailleurEmails = window._bailleurEmails || [];
+  const bailleurSection = document.getElementById('bailleurSection');
+  if (bailleurSection) {
+    const emailRows = bailleurEmails.length === 0
+      ? '<p style="color:#aaa;font-size:13px;text-align:center;padding:12px">Aucun email bailleur configuré</p>'
+      : bailleurEmails.map(e => '<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px">'
+          + '<span style="font-size:13px">📧 ' + e + '</span>'
+          + '<button class="btn-sm btn-delete" onclick="removeBailleurEmail(\'' + e + '\')">🗑️ Supprimer</button>'
+          + '</div>').join('');
+    bailleurSection.innerHTML = '<div style="margin-top:32px;background:var(--white);border-radius:12px;box-shadow:var(--shadow);padding:20px">'
+      + '<h3 style="font-size:16px;font-weight:700;color:var(--primary);margin:0 0 4px">👁️ Accès bailleurs (lecture seule)</h3>'
+      + '<p style="font-size:12px;color:#888;margin:0 0 16px">Ces personnes voient l'avancement sans pouvoir modifier</p>'
+      + '<div style="display:flex;gap:8px;margin-bottom:12px">'
+      + '<input type="email" id="newBailleurEmail" placeholder="email@gestionnaire.fr" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none">'
+      + '<button class="btn-add" onclick="addBailleurEmail()" style="padding:8px 16px">➕ Ajouter</button>'
+      + '</div>'
+      + emailRows
+      + '<div style="margin-top:16px;padding:12px;background:#f0f7ff;border-radius:8px;font-size:12px;color:#1a5276">'
+      + '🔗 <strong>Lien :</strong> <span style="font-family:monospace">' + window.location.href.split('?')[0] + '</span>'
+      + ' <button onclick="copyShareLink()" style="margin-left:8px;padding:4px 10px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">📋 Copier</button>'
+      + '</div>'
+      + '</div>';
+  }
 }
 
 window.openResModalEdit = function(fbKey, nom, type) {
