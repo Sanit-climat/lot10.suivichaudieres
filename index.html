@@ -2044,8 +2044,9 @@ function seedInterventionsFromDates() {
   RESIDENCES_DATA.forEach((res, ri) => {
     res.locataires.forEach((loc, li) => {
       const ovr = locOverrides[`r${ri}_l${li}`] || {};
-      // Priorité : locOverrides, puis données statiques
-      const dateEntretien = ovr.dateEntretienPrec || loc.dateEntretienPrec || '';
+      // Priorité : dateEntretien2026, puis dateEntretienPrec
+      const dateEntretien = ovr.dateEntretien2026 || loc.dateEntretien2026
+                         || ovr.dateEntretienPrec  || loc.dateEntretienPrec || '';
       const dateProchain  = ovr.dateProchainEntretien || loc.dateProchainEntretien || '';
       const nom = ovr.nom || loc.nom || '';
       const ref = ovr.ref || loc.ref || '';
@@ -2063,8 +2064,11 @@ function seedInterventionsFromDates() {
     if (!loc || loc._deleted || !loc.nom) return;
     if (locOverrides['del_' + k]) return;
     const res = RESIDENCES_DATA[ri];
+    // Priorité : dateEntretien2026, puis dateEntretienPrec
+    const dateEntretien = loc.dateEntretien2026 || loc.dateEntretienPrec || '';
+    const dateProchain  = loc.dateProchainEntretien || '';
     processLoc(ri, li, loc.nom, loc.ref || '', loc._resNom || (res ? res.nom : ''),
-               loc.dateEntretienPrec || '', loc.dateProchainEntretien || '');
+               dateEntretien, dateProchain);
   });
 
   if (count > 0) {
@@ -3839,8 +3843,9 @@ const IMPORT_COL_LABELS = {
   tel:           { label: 'Téléphone', required: false },
   email:         { label: 'Email', required: false },
   adresse:       { label: 'Adresse', required: false },
-  dateEntretien: { label: '📅 Date entretien réalisé', required: false },
-  dateProchain:  { label: '📅 Date prochain entretien', required: false },
+  dateEntretien:  { label: '📅 Date entretien précédent', required: false },
+  dateEntretien2026: { label: '📅 Date entretien 2026', required: false },
+  dateProchain:   { label: '📅 Date prochain entretien', required: false },
 };
 
 // Détection automatique des colonnes
@@ -3855,8 +3860,9 @@ const COL_HINTS = {
   tel:           ['tel','phone','mobile','port','fixe','contact'],
   email:         ['email','mail','courriel'],
   adresse:       ['adresse','address','rue'],
-  dateEntretien: ['date entretien','date_entretien','dateentretien','entretien','date realise','date réalisé','date visite','visite','realise','réalisé','dt_entretien','date_visite'],
-  dateProchain:  ['prochain','date prochain','dateprochain','prochaine visite','next','date_prochain','prochaine','prochain entretien'],
+  dateEntretien:     ['date entretien prec','date precedent','date_entretien','dateentretien','entretien prec','realise','réalisé','dt_entretien'],
+  dateEntretien2026: ['2026','entretien 2026','date 2026','date entretien 2026','date_2026','annee 2026'],
+  dateProchain:      ['prochain','date prochain','dateprochain','prochaine visite','next','date_prochain','prochaine','prochain entretien'],
 };
 
 function guessColumn(headers, field) {
@@ -4066,6 +4072,7 @@ async function confirmImportLoc() {
       email:   getRowVal(row, 'email'),
       adresse: getRowVal(row, 'adresse'),
       dateEntretienPrec:      dateEntretien || '',
+      dateEntretien2026:      getRowVal(row, 'dateEntretien2026') ? normalizeDate(getRowVal(row, 'dateEntretien2026')) : (dateEntretien || ''),
       dateProchainEntretien:  dateProchain  || '',
       _resIdx: ri,
       _resNom: res.nom,
@@ -4075,13 +4082,16 @@ async function confirmImportLoc() {
     updates['lot10_locataires/' + locKey] = locData;
 
     // Si date entretien → marquer comme fait dans lot10 + créer intervention
-    if (dateEntretien) {
+    const date2026Raw = getRowVal(row, 'dateEntretien2026');
+    const date2026 = date2026Raw ? normalizeDate(date2026Raw) : '';
+    const dateForDone = date2026 || dateEntretien;
+    if (dateForDone) {
       withDate++;
       updates['lot10/' + locKey] = {
         done: true,
-        date: dateEntretien,
+        date: dateForDone,
         dateProchain: dateProchain,
-        doneAt: new Date(dateEntretien).toISOString(),
+        doneAt: new Date(dateForDone).toISOString(),
         doneBy: 'import',
       };
       // Créer une intervention
