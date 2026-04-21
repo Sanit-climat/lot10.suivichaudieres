@@ -1334,6 +1334,22 @@ function renderDashboard() {
 
     res.locataires.forEach((loc, li) => {
       const k = getKey(ri, li);
+      if (locOverrides['del_' + k]) return; // supprimé
+      if (isVmcOnly) {
+        totalVmc++;
+        if (dbData[k] && dbData[k].done) doneVmc++;
+      } else {
+        totalLgt++;
+        if (dbData[k] && dbData[k].done) doneLgt++;
+      }
+    });
+    // Locataires importés Excel (r{ri}_l{1000+})
+    Object.keys(locOverrides).forEach(k => {
+      const km = k.match(/^r(\d+)_l(\d+)$/);
+      if (!km || parseInt(km[1]) !== ri || parseInt(km[2]) < 1000) return;
+      const loc = locOverrides[k];
+      if (!loc || loc._deleted || !loc.nom) return;
+      if (locOverrides['del_' + k]) return;
       if (isVmcOnly) {
         totalVmc++;
         if (dbData[k] && dbData[k].done) doneVmc++;
@@ -1376,10 +1392,21 @@ function renderDashboard() {
   cont.innerHTML = '';
   RESIDENCES_DATA.forEach((res, ri) => {
     if (!res._fbKey && window._deletedResidences && window._deletedResidences[ri]) return;
-    const t = res.locataires.length;
-    let d = 0;
-    res.locataires.forEach((_, li) => {
+    let t = 0, d = 0;
+    res.locataires.forEach((loc, li) => {
       const k = getKey(ri, li);
+      if (locOverrides['del_' + k]) return;
+      t++;
+      if (dbData[k] && dbData[k].done) d++;
+    });
+    // Locataires importés
+    Object.keys(locOverrides).forEach(k => {
+      const km = k.match(/^r(\d+)_l(\d+)$/);
+      if (!km || parseInt(km[1]) !== ri || parseInt(km[2]) < 1000) return;
+      const loc = locOverrides[k];
+      if (!loc || loc._deleted || !loc.nom) return;
+      if (locOverrides['del_' + k]) return;
+      t++;
       if (dbData[k] && dbData[k].done) d++;
     });
     const p = t > 0 ? Math.round(d / t * 100) : 0;
