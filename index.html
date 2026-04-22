@@ -1227,13 +1227,21 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+let _loginInProgress = false;
 function doLogin() {
+  if (_loginInProgress) return;
   const e = document.getElementById('loginEmail').value.trim();
   const p = document.getElementById('loginPassword').value;
+  if (!e || !p) return;
+  _loginInProgress = true;
   document.getElementById('authError').textContent = '';
-  auth.signInWithEmailAndPassword(e, p).catch(err => {
-    document.getElementById('authError').textContent = 'Email ou mot de passe incorrect.';
-  });
+  auth.signInWithEmailAndPassword(e, p)
+    .catch(err => {
+      document.getElementById('authError').textContent = 'Email ou mot de passe incorrect.';
+    })
+    .finally(() => {
+      setTimeout(() => { _loginInProgress = false; }, 3000);
+    });
 }
 
 function doLogout() {
