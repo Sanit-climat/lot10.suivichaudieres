@@ -15694,9 +15694,9 @@ body.readonly .readonly-badge { display:flex !important }
           <button class="btn-add" onclick="openResModal()">➕ Nouvelle résidence</button>
         </div>
         <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:14px 16px;margin-bottom:16px">
-          <strong style="color:#856404">🔧 Réparation Font Sarade</strong>
-          <p style="font-size:12px;color:#856404;margin:6px 0 10px">Supprime les doublons de TERRASSES DE FONT SARADE et rattache les entretiens déjà réalisés aux 21 logements officiels. Une sauvegarde est faite automatiquement avant.</p>
-          <button class="btn-add" style="background:#e67e22" onclick="reparerFontSarade()">🔧 Réparer Font Sarade</button>
+          <strong style="color:#856404">🗑️ Réinitialiser Font Sarade</strong>
+          <p style="font-size:12px;color:#856404;margin:6px 0 10px">Supprime TOUT Font Sarade dans la base (doublons inclus) et réimporte proprement les 21 logements officiels. Sauvegarde automatique avant.</p>
+          <button class="btn-add" style="background:#c0392b" onclick="reparerFontSarade()">🗑️ Réinitialiser Font Sarade</button>
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;align-items:center;background:var(--white);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow)">
           <strong>Types :</strong>
@@ -17711,14 +17711,15 @@ window.saveChaudiere = function() {
   }
 };
 
+window.FONT_SARADE_LISTING = [{"ref": "E3210A001L", "nom": "LOPEZ YVETTE", "bat": "A", "esc": "", "etage": "00", "lgt": "1", "type": "T2", "tel": "0656781795", "email": "", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A002L", "nom": "AOUIR ALDJIA & AOUIR KHAIR", "bat": "A", "esc": "", "etage": "00", "lgt": "2", "type": "T3", "tel": "0625027251 0767586781", "email": "iaouir@icloud.com iaouir@icloud.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A003L", "nom": "BARANDONI MICKAEL", "bat": "A", "esc": "", "etage": "00", "lgt": "3", "type": "T3", "tel": "0660709362 0650264228", "email": "sabrina.barandoni@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A004L", "nom": "DENNE OLIVIA et JESSICA", "bat": "A", "esc": "", "etage": "00", "lgt": "4", "type": "T3", "tel": "07 50 87 18 02 07 50 87 18 02", "email": "sandrasa05@outlook.com sandrasa05@outlook.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A005L", "nom": "ANTOINE CHRISTELLE", "bat": "A", "esc": "", "etage": "00", "lgt": "5", "type": "T3", "tel": "0629677819", "email": "antoinechristelle20@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A006L", "nom": "FERA NIFA & FERA BEGZAD", "bat": "A", "esc": "", "etage": "00", "lgt": "6", "type": "T3", "tel": "0637650225 0637650225", "email": "fera.begzad@gmail.com fera.begzad@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A007L", "nom": "HEER ALAIN", "bat": "A", "esc": "", "etage": "RDC", "lgt": "7", "type": "T2", "tel": "07 49 55 18 81 04 42 40 09 06", "email": "alain.heer@yahoo.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A008L", "nom": "TACCHINI CHRISTELLE", "bat": "A", "esc": "", "etage": "01", "lgt": "8", "type": "T2", "tel": "0664623052", "email": "", "adresse": "1 RUE FONT SARADE  13500 MARTIGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A009L", "nom": "BELKERFA FATIHA", "bat": "A", "esc": "", "etage": "01", "lgt": "9", "type": "T3", "tel": "0695631719", "email": "fatihabelkerfa@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A010L", "nom": "NAKACHE BRIGITTE", "bat": "A", "esc": "", "etage": "01", "lgt": "10", "type": "T3", "tel": "0651148009", "email": "patricia808@hotmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A011L", "nom": "HATROUHOU CHRISTINE", "bat": "A", "esc": "", "etage": "01", "lgt": "11", "type": "T3", "tel": "0661517934 0442413675", "email": "christine.h.13@hotmail.fr", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A012L", "nom": "GUERFA YASSINE GUERFA FARIDA", "bat": "A", "esc": "", "etage": "01", "lgt": "12", "type": "T3", "tel": "0758658434", "email": "y.guerfa@yahoo.com y.guerfa@yahoo.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A013L", "nom": "VANNIER ELIANE", "bat": "A", "esc": "", "etage": "01", "lgt": "13", "type": "T3", "tel": "0652757190 0698333989", "email": "jce.vannier@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A014L", "nom": "CHRISTMANN MIREILLE", "bat": "A", "esc": "", "etage": "01", "lgt": "14", "type": "T2", "tel": "0647955691 0442441076", "email": "christine.gruner14@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A015L", "nom": "FERRY OPHELIE DAVI ADRIEN", "bat": "A", "esc": "", "etage": "02", "lgt": "15", "type": "T5", "tel": "0627893595 0627893595", "email": "oferry@laposte.net oferry@laposte.net", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A016L", "nom": "MORALES JACQUELINE", "bat": "A", "esc": "", "etage": "02", "lgt": "16", "type": "T3", "tel": "0649082023 0442421161", "email": "jm.commerces@gmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A017L", "nom": "HAMDI ENIS", "bat": "A", "esc": "", "etage": "02", "lgt": "17", "type": "T3", "tel": "0634621027", "email": "sine2311@hotmail.fr", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A018L", "nom": "TARDI CONCETTO", "bat": "A", "esc": "", "etage": "02", "lgt": "18", "type": "T3", "tel": "0641455745", "email": "", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A019L", "nom": "FOURE EMILIE", "bat": "A", "esc": "", "etage": "02", "lgt": "19", "type": "T3", "tel": "0646798682", "email": "emilie_foure@hotmail.fr", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A020L", "nom": "MERZOUGUI SABRINA", "bat": "A", "esc": "", "etage": "02", "lgt": "20", "type": "T3", "tel": "0620527690 0495082330", "email": "sabrina.m20@hotmail.fr", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}, {"ref": "E3210A021L", "nom": "DE ANDRADE ELISABETH", "bat": "A", "esc": "", "etage": "02", "lgt": "21", "type": "T4", "tel": "0659252002", "email": "elisabeth.deandrade@hotmail.com", "adresse": "1 RUE FONT SARADE 13500 MARTINGUES", "dateEntretienPrec": "", "dateEntretien2026": "", "dateProchainEntretien": ""}];
+
 window.reparerFontSarade = async function() {
   const RES_IDX = 20; // TERRASSES DE FONT SARADE
-  if (!confirm('Réparer Font Sarade ?\n\n• Sauvegarde automatique\n• Suppression des doublons\n• Les entretiens déjà faits sont rattachés aux 21 logements officiels\n\nContinuer ?')) return;
+  if (!confirm('RÉINITIALISER FONT SARADE ?\n\n• Supprime TOUT Font Sarade dans la base (doublons inclus)\n• Réimporte les 21 logements officiels\n• Sauvegarde automatique avant\n\nContinuer ?')) return;
 
   try {
-    showToast('⏳ Réparation en cours...');
+    showToast('⏳ Réinitialisation Font Sarade...');
 
-    // --- Lecture de tout l'état Firebase concerné ---
     const [locSnap, statSnap, intervSnap] = await Promise.all([
       db.ref('lot10_locataires').once('value'),
       db.ref('lot10').once('value'),
@@ -17728,141 +17729,58 @@ window.reparerFontSarade = async function() {
     const stats   = statSnap.val()   || {};
     const intervs = intervSnap.val() || {};
 
-    // --- Sauvegarde de sécurité (horodatée) ---
+    // Sauvegarde de sécurité
     const backupKey = 'backup_fontsarade_' + Date.now();
     await db.ref('lot10_backups/' + backupKey).set({
       createdAt: new Date().toISOString(),
       locataires: locs, statuts: stats, interventions: intervs,
     });
 
-    // Helper : numéro de logement (1..21) d'une entrée rattachée à res 20.
-    // 3 méthodes par ordre de fiabilité : référence E3210A0XXL, champ lgt, puis locIdx.
-    function numFromRef(ref) {
-      if (!ref) return null;
-      // formats: E3210A003L, E3210A021L ... -> les 3 chiffres avant le L final
-      const m = String(ref).match(/A0*(\d{1,3})L/i);
-      if (m) { const n = parseInt(m[1]); if (n >= 1 && n <= 21) return n; }
-      return null;
-    }
-    function numLgt(entry, key) {
-      if (!entry) return null;
-      // 1) via la référence (la plus fiable)
-      let n = numFromRef(entry.ref || entry.locRef);
-      if (n) return n;
-      // 2) via le champ lgt
-      let v = entry.lgt;
-      if (v !== undefined && v !== null && v !== '') {
-        n = parseInt(String(v).replace(/[^0-9]/g, ''));
-        if (n >= 1 && n <= 21) return n;
-      }
-      // 3) via locIdx (statique r20_lX -> X+1) ou la clé
-      let li = entry.locIdx;
-      if (li === undefined && key) {
-        const km = String(key).match(/^r20_l(\d+)$/);
-        if (km) li = parseInt(km[1]);
-      }
-      if (li !== undefined && li !== null) {
-        const num = parseInt(li);
-        if (num >= 0 && num <= 20) return num + 1; // index 0-based -> logement 1-based
-        if (num >= 1000) return (num - 1000) + 1;  // importés r20_l1000+
-      }
-      return null;
-    }
+    // Une entrée appartient à Font Sarade si: _resIdx==20, clé r20_l*, del_r20_*, ou réf E3210A0XXL
+    const isFS_ref  = r => r && /^E3210A0*\d{1,3}L$/i.test(String(r));
+    const isFS_key  = k => /^(del_)?r20_l\d+$/.test(k);
 
     const updates = {};
-    let transferes = 0, supprimesLoc = 0, supprimesStat = 0, supprimesInterv = 0;
+    let delLoc=0, delStat=0, delInterv=0;
 
-    // --- 1. Identifier toutes les clés Firebase rattachées à res 20 (hors logements officiels r20_l0..r20_l20) ---
-    const officiel = k => /^r20_l([0-9]|1[0-9]|20)$/.test(k); // r20_l0 .. r20_l20
-
-    // a) Statuts "done" des anciens doublons -> transférer vers le logement officiel
-    function refIsFS(loc, iv) {
-      const r = (loc && (loc.ref||loc.locRef)) || (iv && (iv.locRef||iv.ref));
-      return r && /^E3210A0*\d{1,3}L$/i.test(String(r));
-    }
-    Object.keys(stats).forEach(k => {
-      const loc = locs[k];
-      const iv0 = intervs['interv_' + k];
-      const isRes20 = (loc && String(loc._resIdx) === '20')
-                    || /^r20_l\d+$/.test(k)
-                    || refIsFS(loc, iv0);
-      if (!isRes20) return;
-      if (officiel(k)) return; // déjà au bon endroit
-      const st = stats[k];
-      if (!st || !st.done) { 
-        // statut non-fait sur un doublon : on le supprime
-        updates['lot10/' + k] = null; supprimesStat++;
-        return;
-      }
-      // retrouver le n° de logement
-      const num = numLgt(loc, k) || numLgt(intervs['interv_' + k], k) || numLgt(locs[k], k);
-      if (num) {
-        const dest = 'r20_l' + (num - 1);
-        // ne pas écraser un "fait" officiel déjà présent
-        if (!(stats[dest] && stats[dest].done)) {
-          updates['lot10/' + dest] = st;
-          transferes++;
-        }
-        // transférer aussi l'intervention liée
-        const iv = intervs['interv_' + k];
-        if (iv && !intervs['interv_' + dest]) {
-          updates['lot10_interventions/interv_' + dest] = Object.assign({}, iv, {
-            resIdx: 20, locIdx: num - 1,
-          });
-        }
-      }
-      // supprimer l'ancien statut + ancienne intervention
-      updates['lot10/' + k] = null; supprimesStat++;
-      if (intervs['interv_' + k]) { updates['lot10_interventions/interv_' + k] = null; supprimesInterv++; }
-    });
-
-    // b) Locataires doublons -> supprimer.
-    // Un locataire appartient à Font Sarade si: _resIdx==20, OU clé r20_l*, OU réf E3210...A0XXL.
-    function refFontSarade(loc) {
-      const r = loc && (loc.ref || loc.locRef);
-      return r && /^E3210A0*\d{1,3}L$/i.test(String(r));
-    }
+    // 1) Supprimer TOUS les locataires Font Sarade
     Object.keys(locs).forEach(k => {
       const loc = locs[k];
-      const isFontDel = /^del_r20_l\d+$/.test(k);
-      if (isFontDel) { updates['lot10_locataires/' + k] = null; return; }
-      const isRes20 = String(loc && loc._resIdx) === '20'
-                    || /^r20_l\d+$/.test(k)
-                    || refFontSarade(loc);
-      if (!isRes20) return;
-      if (officiel(k)) {
-        // entrée override sur un logement officiel (r20_l0..r20_l20) : on la garde
-        return;
+      if (isFS_key(k) || (loc && String(loc._resIdx)==='20') || (loc && isFS_ref(loc.ref||loc.locRef))) {
+        updates['lot10_locataires/' + k] = null; delLoc++;
       }
-      // doublon (new_*, r20_l1000+, ou clé Firebase auto avec réf Font Sarade) -> suppression
-      updates['lot10_locataires/' + k] = null; supprimesLoc++;
     });
-
-    // c) Interventions orphelines restantes rattachées à res20 sur des clés non officielles
+    // 2) Supprimer TOUS les statuts Font Sarade
+    Object.keys(stats).forEach(k => {
+      const loc = locs[k];
+      if (isFS_key(k) || (loc && String(loc._resIdx)==='20') || (loc && isFS_ref(loc.ref||loc.locRef))) {
+        updates['lot10/' + k] = null; delStat++;
+      }
+    });
+    // 3) Supprimer TOUTES les interventions Font Sarade
     Object.keys(intervs).forEach(k => {
       const iv = intervs[k];
-      if (!iv || String(iv.resIdx) !== '20') return;
-      const baseKey = k.replace(/^interv_/, '');
-      if (officiel(baseKey)) return;
-      if (updates['lot10_interventions/' + k] === undefined) {
-        updates['lot10_interventions/' + k] = null; supprimesInterv++;
+      if (iv && (String(iv.resIdx)==='20' || isFS_ref(iv.locRef||iv.ref))) {
+        updates['lot10_interventions/' + k] = null; delInterv++;
       }
+      const base = k.replace(/^interv_/, '');
+      if (isFS_key(base)) updates['lot10_interventions/' + k] = null;
     });
 
+    // 4) Appliquer la suppression
     await db.ref().update(updates);
 
-    showToast('✅ Font Sarade réparé : ' + transferes + ' entretien(s) rattaché(s), ' + supprimesLoc + ' doublon(s) supprimé(s).');
-    alert('Réparation terminée ✅\n\n' +
-          '• Entretiens rattachés : ' + transferes + '\n' +
-          '• Doublons locataires supprimés : ' + supprimesLoc + '\n' +
-          '• Statuts nettoyés : ' + supprimesStat + '\n' +
-          '• Interventions nettoyées : ' + supprimesInterv + '\n\n' +
-          'Sauvegarde conservée dans Firebase sous : lot10_backups/' + backupKey + '\n\n' +
-          'La page va se recharger.');
+    showToast('✅ Font Sarade réinitialisé : ' + delLoc + ' entrée(s) supprimée(s).');
+    alert('Réinitialisation terminée ✅\n\n' +
+          '• Locataires supprimés : ' + delLoc + '\n' +
+          '• Statuts supprimés : ' + delStat + '\n' +
+          '• Interventions supprimées : ' + delInterv + '\n\n' +
+          'Les 21 logements officiels (depuis le fichier) s\'affichent désormais proprement.\n' +
+          'Sauvegarde : lot10_backups/' + backupKey + '\n\nLa page va se recharger.');
     setTimeout(() => location.reload(), 800);
   } catch (e) {
     console.error(e);
-    alert('❌ Erreur pendant la réparation : ' + e.message + '\n\nAucune donnée perdue (sauvegarde faite avant). Réessayez ou envoyez-moi la capture de la console.');
+    alert('❌ Erreur : ' + e.message + '\n\nAucune donnée perdue (sauvegarde faite avant).');
   }
 };
 
