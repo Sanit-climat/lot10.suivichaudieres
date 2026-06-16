@@ -17735,17 +17735,38 @@ window.reparerFontSarade = async function() {
       locataires: locs, statuts: stats, interventions: intervs,
     });
 
-    // Helper : numéro de logement (1..21) d'une entrée rattachée à res 20
-    function numLgt(entry) {
+    // Helper : numéro de logement (1..21) d'une entrée rattachée à res 20.
+    // 3 méthodes par ordre de fiabilité : référence E3210A0XXL, champ lgt, puis locIdx.
+    function numFromRef(ref) {
+      if (!ref) return null;
+      // formats: E3210A003L, E3210A021L ... -> les 3 chiffres avant le L final
+      const m = String(ref).match(/A0*(\d{1,3})L/i);
+      if (m) { const n = parseInt(m[1]); if (n >= 1 && n <= 21) return n; }
+      return null;
+    }
+    function numLgt(entry, key) {
       if (!entry) return null;
-      // priorité au champ lgt si présent
-      let n = entry.lgt ?? entry.locNom_lgt;
-      if (n === undefined || n === null || n === '') {
-        // tenter via locIdx pour les statiques r20_lX -> X+1
-        return null;
+      // 1) via la référence (la plus fiable)
+      let n = numFromRef(entry.ref || entry.locRef);
+      if (n) return n;
+      // 2) via le champ lgt
+      let v = entry.lgt;
+      if (v !== undefined && v !== null && v !== '') {
+        n = parseInt(String(v).replace(/[^0-9]/g, ''));
+        if (n >= 1 && n <= 21) return n;
       }
-      n = parseInt(String(n).replace(/[^0-9]/g, ''));
-      return (n >= 1 && n <= 21) ? n : null;
+      // 3) via locIdx (statique r20_lX -> X+1) ou la clé
+      let li = entry.locIdx;
+      if (li === undefined && key) {
+        const km = String(key).match(/^r20_l(\d+)$/);
+        if (km) li = parseInt(km[1]);
+      }
+      if (li !== undefined && li !== null) {
+        const num = parseInt(li);
+        if (num >= 0 && num <= 20) return num + 1; // index 0-based -> logement 1-based
+        if (num >= 1000) return (num - 1000) + 1;  // importés r20_l1000+
+      }
+      return null;
     }
 
     const updates = {};
@@ -17755,11 +17776,16 @@ window.reparerFontSarade = async function() {
     const officiel = k => /^r20_l([0-9]|1[0-9]|20)$/.test(k); // r20_l0 .. r20_l20
 
     // a) Statuts "done" des anciens doublons -> transférer vers le logement officiel
+    function refIsFS(loc, iv) {
+      const r = (loc && (loc.ref||loc.locRef)) || (iv && (iv.locRef||iv.ref));
+      return r && /^E3210A0*\d{1,3}L$/i.test(String(r));
+    }
     Object.keys(stats).forEach(k => {
-      // un statut appartient à res20 si la clé locataire correspondante est res20
       const loc = locs[k];
-      const isRes20 = (loc && String(loc._resIdx) === '20') ||
-                      /^r20_l\d+$/.test(k) && !officiel(k);
+      const iv0 = intervs['interv_' + k];
+      const isRes20 = (loc && String(loc._resIdx) === '20')
+                    || /^r20_l\d+$/.test(k)
+                    || refIsFS(loc, iv0);
       if (!isRes20) return;
       if (officiel(k)) return; // déjà au bon endroit
       const st = stats[k];
@@ -17769,7 +17795,7 @@ window.reparerFontSarade = async function() {
         return;
       }
       // retrouver le n° de logement
-      const num = numLgt(loc) || numLgt(intervs['interv_' + k]);
+      const num = numLgt(loc, k) || numLgt(intervs['interv_' + k], k) || numLgt(locs[k], k);
       if (num) {
         const dest = 'r20_l' + (num - 1);
         // ne pas écraser un "fait" officiel déjà présent
@@ -17790,18 +17816,25 @@ window.reparerFontSarade = async function() {
       if (intervs['interv_' + k]) { updates['lot10_interventions/interv_' + k] = null; supprimesInterv++; }
     });
 
-    // b) Locataires doublons (new_*, r20_l1000+, ou r20_lX non officiel) -> supprimer
+    // b) Locataires doublons -> supprimer.
+    // Un locataire appartient à Font Sarade si: _resIdx==20, OU clé r20_l*, OU réf E3210...A0XXL.
+    function refFontSarade(loc) {
+      const r = loc && (loc.ref || loc.locRef);
+      return r && /^E3210A0*\d{1,3}L$/i.test(String(r));
+    }
     Object.keys(locs).forEach(k => {
       const loc = locs[k];
-      const isRes20 = String(loc && loc._resIdx) === '20' || (/^r20_l\d+$/.test(k) && !officiel(k));
       const isFontDel = /^del_r20_l\d+$/.test(k);
       if (isFontDel) { updates['lot10_locataires/' + k] = null; return; }
+      const isRes20 = String(loc && loc._resIdx) === '20'
+                    || /^r20_l\d+$/.test(k)
+                    || refFontSarade(loc);
       if (!isRes20) return;
       if (officiel(k)) {
-        // entrée override sur un logement officiel : on la garde (modifs de nom légitimes)
+        // entrée override sur un logement officiel (r20_l0..r20_l20) : on la garde
         return;
       }
-      // doublon -> suppression
+      // doublon (new_*, r20_l1000+, ou clé Firebase auto avec réf Font Sarade) -> suppression
       updates['lot10_locataires/' + k] = null; supprimesLoc++;
     });
 
